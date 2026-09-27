@@ -29,6 +29,9 @@ export default function BoxDrawer() {
   } = useBox();
 
   const progress = Math.min(100, (totalWeight / 5) * 100);
+  const hasCatalogProducts = lines.some(
+    (line) => getBundle(line.bundleId)?.catalogType === "product"
+  );
 
   const suggested = bundles
     .filter((bundle) => !lines.some((line) => line.bundleId === bundle.id))
@@ -133,7 +136,10 @@ export default function BoxDrawer() {
                         {bundle.items.length > 3 ? " + more" : ""}
                       </small>
                       <small>
-                        {bundle.sizeLabel || `${bundle.weightKg} kg`} each · <Price inr={bundle.priceInr} />
+                        {bundle.sizeLabel || `${bundle.weightKg} kg`} each
+                        {bundle.catalogType === "product"
+                          ? " · Price on WhatsApp"
+                          : <> · <Price inr={bundle.priceInr} /></>}
                       </small>
                       <div className="qty">
                         <button
@@ -191,9 +197,11 @@ export default function BoxDrawer() {
 
         <div className="drawerBottom">
           <div className="totalLine">
-            <span>Bundle subtotal</span>
+            <span>Order price</span>
             <strong>
-              <Price inr={totalInr} />
+              {hasCatalogProducts
+                ? "Confirmed on WhatsApp"
+                : <Price inr={totalInr} />}
             </strong>
           </div>
 
