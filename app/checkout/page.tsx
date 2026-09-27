@@ -1,944 +1,173 @@
 "use client";
 
-import Link from "next/link";
-import {
-  FormEvent,
-  useMemo,
-  useState,
-} from "react";
-
 import Footer from "@/components/Footer";
-import Price from "@/components/Price";
+import BundleQuickView from "@/components/BundleQuickView";
 import { useBox } from "@/components/BoxProvider";
-
-export default function CheckoutPage() {
-  const {
-    lines,
-    getBundle,
-
-    totalProductWeight,
-    packagingWeight,
-    totalWeight,
-
-    totalInr,
-
-    minimumReached,
-    remainingToMinimum,
-
-    selectedCountry,
-    giftMode,
-  } = useBox();
-
-  const [sending, setSending] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
-  /* ======================================================
-     ORDER LINES
-  ====================================================== */
-
-  const orderLines =
-    useMemo(() => {
-      return lines
-        .map((line) => ({
-          ...line,
-
-          bundle:
-            getBundle(
-              line.bundleId
-            ),
-        }))
-        .filter(
-          (line) =>
-            Boolean(
-              line.bundle
-            )
-        );
-    }, [
-      lines,
-      getBundle,
-    ]);
-
-  /* ======================================================
-     SUBMIT TO WHATSAPP
-  ====================================================== */
-
-  const submit = (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
-
-    setError("");
-
-    /* EMPTY CART */
-
-    if (
-      !orderLines.length
-    ) {
-      setError(
-        "Your box is empty. Please add bundles before continuing."
-      );
-
-      return;
-    }
-
-    /* 5 KG MINIMUM */
-
-    if (
-      !minimumReached
-    ) {
-      setError(
-        `Please add ${remainingToMinimum.toFixed(
-          1
-        )} kg more to reach the 5 kg minimum.`
-      );
-
-      return;
-    }
-
-    const formElement =
-      event.currentTarget;
-
-    /*
-     * Let browser handle
-     * required-field validation.
-     */
-
-    if (
-      !formElement.checkValidity()
-    ) {
-      formElement.reportValidity();
-
-      return;
-    }
-
-    setSending(true);
-
-    const form =
-      new FormData(
-        formElement
-      );
-
-    /* ====================================================
-       CUSTOMER DETAILS
-    ==================================================== */
-
-    const details = {
-      name: String(
-        form.get("name") ||
-          ""
-      ).trim(),
-
-      phone: String(
-        form.get("phone") ||
-          ""
-      ).trim(),
-
-      email: String(
-        form.get("email") ||
-          ""
-      ).trim(),
-
-      country: String(
-        form.get("country") ||
-          selectedCountry.name
-      ).trim(),
-
-      address1: String(
-        form.get("address1") ||
-          ""
-      ).trim(),
-
-      address2: String(
-        form.get("address2") ||
-          ""
-      ).trim(),
-
-      city: String(
-        form.get("city") ||
-          ""
-      ).trim(),
-
-      state: String(
-        form.get("state") ||
-          ""
-      ).trim(),
-
-      postal: String(
-        form.get("postal") ||
-          ""
-      ).trim(),
-
-      notes: String(
-        form.get("notes") ||
-          ""
-      ).trim(),
-    };
-
-    /* ====================================================
-       ITEMS FOR WHATSAPP
-    ==================================================== */
-
-    const itemsText =
-      orderLines
-        .map(
-          (
-            line,
-            index
-          ) => {
-            const bundle =
-              line.bundle!;
-
-            const lineWeight =
-              bundle.weightKg *
-              line.quantity;
-
-            const lineTotal =
-              bundle.priceInr *
-              line.quantity;
-
-            return [
-              `${index + 1}. ${bundle.name}`,
-
-              `Quantity: ${line.quantity}`,
-
-              `Weight: ${lineWeight.toFixed(
-                1
-              )} kg`,
-
-              `Amount: INR ${lineTotal}`,
-
-              `Includes: ${
-                bundle.items.join(
-                  ", "
-                ) ||
-                "As listed in catalog"
-              }`,
-            ].join(
-              "\n"
-            );
-          }
-        )
-        .join(
-          "\n\n"
-        );
-
-    /* ====================================================
-       WHATSAPP ORDER MESSAGE
-    ==================================================== */
-
-    const message = [
-      "Hi Godavari Basket! 👋",
-
-      "",
-
-      "I would like to continue with this Godavari Basket Abroad order.",
-
-      "",
-
-      "🧺 ORDER DETAILS",
-
-      "",
-
-      itemsText,
-
-      "",
-
-      "──────────────",
-
-      "",
-
-      `Product weight: ${totalProductWeight.toFixed(
-        1
-      )} kg`,
-
-      `Packaging weight: ${packagingWeight.toFixed(
-        1
-      )} kg`,
-
-      `Total shipment weight: ${totalWeight.toFixed(
-        1
-      )} kg`,
-
-      "",
-
-      `Bundle subtotal: INR ${Math.round(
-        totalInr
-      ).toLocaleString()}`,
-
-      "Transport: Please confirm on WhatsApp",
-
-      "Final total: Please confirm on WhatsApp",
-
-      "",
-
-      `Gift order: ${
-        giftMode
-          ? "Yes"
-          : "No"
-      }`,
-
-      "",
-
-      "👤 CUSTOMER DETAILS",
-
-      "",
-
-      `Name: ${details.name}`,
-
-      `WhatsApp / Mobile: ${details.phone}`,
-
-      `Email: ${
-        details.email ||
-        "-"
-      }`,
-
-      `Country: ${details.country}`,
-
-      "",
-
-      "📍 DELIVERY ADDRESS",
-
-      "",
-
-      [
-        details.address1,
-        details.address2,
-        details.city,
-        details.state,
-        details.postal,
-      ]
-        .filter(
-          Boolean
-        )
-        .join(
-          ", "
-        ),
-
-      "",
-
-      `Notes: ${
-        details.notes ||
-        "-"
-      }`,
-
-      "",
-
-      "Please confirm availability, final packing and payment details.",
-
-      "",
-
-      "Thank you.",
-    ].join(
-      "\n"
-    );
-
-    /* ====================================================
-       WHATSAPP NUMBER
-    ==================================================== */
-
-    const rawNumber =
-      process.env
-        .NEXT_PUBLIC_WHATSAPP_NUMBER ||
-      "919618851406";
-
-    const whatsappNumber =
-      rawNumber.replace(
-        /\D/g,
-        ""
-      );
-
-    if (
-      !whatsappNumber
-    ) {
-      setSending(
-        false
-      );
-
-      setError(
-        "WhatsApp checkout is temporarily unavailable. Please contact Godavari Basket directly."
-      );
-
-      return;
-    }
-
-    const whatsappUrl =
-      `https://wa.me/${whatsappNumber}` +
-      `?text=${encodeURIComponent(
-        message
-      )}`;
-
-    /*
-     * Reliable mobile handoff.
-     */
-
-    window.location.href =
-      whatsappUrl;
-  };
+import { useCatalog } from "@/components/CatalogProvider";
+import type { Bundle } from "@/data/catalog";
+import { useMemo, useState } from "react";
+
+function CatalogCard({ item }: { item: Bundle }) {
+  const { addBundle, getQuantity } = useBox();
+  const [quickView, setQuickView] = useState(false);
+  const quantity = getQuantity(item.id);
 
   return (
-    <main className="subPage checkoutPage">
+    <>
+      <article className="productCatalogCard">
+        <button type="button" className="productCatalogImage" onClick={() => setQuickView(true)} aria-label={`View ${item.name} details`}>
+          <img src={item.image || "/images/brand/logo.webp"} alt={item.name} loading="lazy" />
+          {item.popular && <span className="productCatalogBadge">Popular</span>}
+        </button>
 
-      {/* ==================================================
-          HERO
-      ================================================== */}
-
-      <section className="checkoutHero">
-        <div className="shell">
-
-          <span className="eyebrow light">
-            FINAL STEP
+        <div className="productCatalogBody">
+          <span className="productCatalogCategory">
+            {item.categoryName || item.category.replace(/-/g, " ")}
           </span>
+          <button type="button" className="catalogTitleButton" onClick={() => setQuickView(true)}><h2>{item.name}</h2></button>
+          {item.subtitle && <p>{item.subtitle}</p>}
 
-          <h1>
-            Your Godavari Box,
-            <br />
+          {item.items.length > 0 && (
+            <p className="productCatalogContents">
+              {item.items.slice(0, 4).join(" · ")}
+              {item.items.length > 4 ? ` +${item.items.length - 4} more` : ""}
+            </p>
+          )}
 
-            <em>
-              ready to continue.
-            </em>
-          </h1>
+          <div className="productCatalogMeta">
+            <span>{item.sizeLabel || `${item.weightKg} kg`}</span>
+          </div>
 
+          <button type="button" onClick={() => addBundle(item.id)}>
+            {quantity > 0 ? `Add Another · ${quantity} in Box` : "Add to Custom Box"}
+          </button>
+        </div>
+      </article>
+      {quickView && <BundleQuickView bundle={item} onClose={() => setQuickView(false)} />}
+    </>
+  );
+}
+
+export default function CatalogPage() {
+  const { products, loading, error, source, refreshCatalog } = useCatalog();
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  const categories = useMemo(() => {
+    const values = new Map<string, string>();
+    products.forEach((item) => {
+      values.set(item.category, item.categoryName || item.category.replace(/-/g, " "));
+    });
+    return Array.from(values, ([key, name]) => ({ key, name }));
+  }, [products]);
+
+  const visibleProducts = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+
+    return products.filter((item) => {
+      const matchesCategory = activeCategory === "all" || item.category === activeCategory;
+      const searchable = [
+        item.name,
+        item.subtitle,
+        item.categoryName,
+        item.subcategory,
+        ...(item.items || []),
+        ...(item.tags || []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return matchesCategory && (!needle || searchable.includes(needle));
+    });
+  }, [activeCategory, products, query]);
+
+  return (
+    <main className="subPage productCatalogPage">
+      <section className="productCatalogHero">
+        <div className="shell productCatalogHeroInner">
+          <span className="eyebrow">GODAVARI BASKET ABROAD</span>
+          <h1>Explore Our Add-ons</h1>
           <p>
-            Review your bundles,
-            add delivery details,
-            then continue securely
-            with our team on
-            WhatsApp.
+            Authentic Godavari favourites, ready to become part of your custom box.
+            Prices are confirmed with our team on WhatsApp.
           </p>
-
+          <a className="goldButton" href="/build">
+            Build Your Custom Box <span>→</span>
+          </a>
         </div>
       </section>
 
-      {/* ==================================================
-          CHECKOUT AREA
-      ================================================== */}
-
-      <section className="section shell checkoutLayout">
-
-        {/* =================================================
-            LEFT
-        ================================================= */}
-
-        <div className="checkoutMain">
-
-          {/* ===============================================
-              CART REVIEW
-          =============================================== */}
-
-          <div className="checkoutSectionHead">
-
-            <span className="eyebrow">
-              YOUR BOX
-            </span>
-
-            <h2>
-              Review your selection
-            </h2>
-
-          </div>
-
-          {!orderLines.length ? (
-            <div className="checkoutEmpty">
-
-              <h3>
-                Your box is empty.
-              </h3>
-
-              <p>
-                Choose your
-                Godavari bundles
-                before checkout.
-              </p>
-
-              <Link
-                className="goldButton"
-                href="/build"
-              >
-                Build your box
-
-                <span>
-                  →
-                </span>
-              </Link>
-
-            </div>
-          ) : (
-            <div className="checkoutItems">
-
-              {orderLines.map(
-                (line) => {
-                  const bundle =
-                    line.bundle!;
-
-                  return (
-                    <article
-                      key={
-                        line.bundleId
-                      }
-                    >
-
-                      <img
-                        src={
-                          bundle.image
-                        }
-                        alt={
-                          bundle.name
-                        }
-                      />
-
-                      <div>
-
-                        <h3>
-                          {
-                            bundle.name
-                          }
-                        </h3>
-
-                        <p>
-                          {bundle.items
-                            .slice(
-                              0,
-                              4
-                            )
-                            .join(
-                              " · "
-                            )}
-                        </p>
-
-                        <small>
-                          {
-                            bundle.weightKg
-                          }{" "}
-                          kg ×{" "}
-                          {
-                            line.quantity
-                          }{" "}
-                          ={" "}
-                          {(
-                            bundle.weightKg *
-                            line.quantity
-                          ).toFixed(
-                            1
-                          )}{" "}
-                          kg
-                        </small>
-
-                      </div>
-
-                      <strong>
-                        <Price
-                          inr={
-                            bundle.priceInr *
-                            line.quantity
-                          }
-                        />
-                      </strong>
-
-                    </article>
-                  );
-                }
-              )}
-
-            </div>
-          )}
-
-          {/* ===============================================
-              CUSTOMER DETAILS FORM
-          =============================================== */}
-
-          <form
-            className="checkoutForm"
-            onSubmit={submit}
-          >
-
-            <div className="checkoutSectionHead">
-
-              <span className="eyebrow">
-                YOUR DETAILS
-              </span>
-
-              <h2>
-                Where is this box
-                going?
-              </h2>
-
-              <p>
-                We'll use these
-                details to continue
-                the order with you
-                on WhatsApp.
-              </p>
-
-            </div>
-
-            <div className="formGrid">
-
-              {/* NAME */}
-
-              <label>
-
-                <span>
-                  Full name *
-                </span>
-
-                <input
-                  name="name"
-                  required
-                  autoComplete="name"
-                  placeholder="Your full name"
-                />
-
-              </label>
-
-              {/* PHONE */}
-
-              <label>
-
-                <span>
-                  WhatsApp /
-                  Mobile *
-                </span>
-
-                <input
-                  name="phone"
-                  required
-                  autoComplete="tel"
-                  inputMode="tel"
-                  placeholder="Country code + number"
-                />
-
-              </label>
-
-              {/* EMAIL */}
-
-              <label className="full">
-
-                <span>
-                  Email
-                </span>
-
-                <input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                />
-
-              </label>
-
-              {/* COUNTRY */}
-
-              <label>
-
-                <span>
-                  Country *
-                </span>
-
-                <input
-                  name="country"
-                  required
-                  defaultValue={
-                    selectedCountry.name
-                  }
-                  autoComplete="country-name"
-                />
-
-              </label>
-
-              {/* POSTAL */}
-
-              <label>
-
-                <span>
-                  Postal / ZIP code *
-                </span>
-
-                <input
-                  name="postal"
-                  required
-                  autoComplete="postal-code"
-                />
-
-              </label>
-
-              {/* ADDRESS 1 */}
-
-              <label className="full">
-
-                <span>
-                  Address line 1 *
-                </span>
-
-                <input
-                  name="address1"
-                  required
-                  autoComplete="address-line1"
-                />
-
-              </label>
-
-              {/* ADDRESS 2 */}
-
-              <label className="full">
-
-                <span>
-                  Address line 2
-                </span>
-
-                <input
-                  name="address2"
-                  autoComplete="address-line2"
-                />
-
-              </label>
-
-              {/* CITY */}
-
-              <label>
-
-                <span>
-                  City *
-                </span>
-
-                <input
-                  name="city"
-                  required
-                  autoComplete="address-level2"
-                />
-
-              </label>
-
-              {/* STATE */}
-
-              <label>
-
-                <span>
-                  State / Region *
-                </span>
-
-                <input
-                  name="state"
-                  required
-                  autoComplete="address-level1"
-                />
-
-              </label>
-
-              {/* NOTES */}
-
-              <label className="full">
-
-                <span>
-                  Order notes
-                </span>
-
-                <textarea
-                  name="notes"
-                  rows={4}
-                  placeholder="Anything we should know about this order?"
-                />
-
-              </label>
-
-            </div>
-
-            {/* =============================================
-                ERROR
-            ============================================= */}
-
-            {error && (
-              <p className="checkoutWarning">
-                {error}
-              </p>
-            )}
-
-            {/* =============================================
-                WHATSAPP CHECKOUT
-            ============================================= */}
-
+      <section className="shell productCatalogSection">
+        <div className="productCatalogTools">
+          <label className="productCatalogSearch">
+            <span aria-hidden="true">⌕</span>
+            <input
+              type="search"
+              placeholder="Search products"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-label="Search add-ons"
+            />
+          </label>
+
+          <div className="productCatalogFilters" aria-label="Catalog categories">
             <button
-              className="whatsappCheckout"
-              type="submit"
-              disabled={
-                !minimumReached ||
-                !orderLines.length ||
-                sending
-              }
+              type="button"
+              className={activeCategory === "all" ? "active" : ""}
+              onClick={() => setActiveCategory("all")}
             >
-
-              <span>
-                {sending
-                  ? "Opening WhatsApp…"
-                  : "Continue order on WhatsApp"}
-              </span>
-
-              <b>
-                →
-              </b>
-
+              All
             </button>
-
-            {!minimumReached &&
-              orderLines.length >
-                0 && (
-                <p className="checkoutWarning">
-
-                  Add{" "}
-
-                  {remainingToMinimum.toFixed(
-                    1
-                  )}{" "}
-
-                  kg more to reach
-                  the 5 kg minimum.
-
-                </p>
-              )}
-
-          </form>
-
+            {categories.map((category) => (
+              <button
+                type="button"
+                key={category.key}
+                className={activeCategory === category.key ? "active" : ""}
+                onClick={() => setActiveCategory(category.key)}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* =================================================
-            ORDER SUMMARY
-        ================================================= */}
-
-        <aside className="checkoutSummary">
-
-          <span className="eyebrow">
-            ORDER SUMMARY
-          </span>
-
-          <h3>
-            Your Godavari Box
-          </h3>
-
-          <div className="summaryRows">
-
-            {/* BUNDLE COUNT */}
-
-            <p>
-              <span>
-                Bundles
-              </span>
-
-              <b>
-                {lines.reduce(
-                  (
-                    sum,
-                    line
-                  ) =>
-                    sum +
-                    line.quantity,
-                  0
-                )}
-              </b>
-            </p>
-
-            {/* PRODUCT WEIGHT */}
-
-            <p>
-              <span>
-                Products
-              </span>
-
-              <b>
-                {totalProductWeight.toFixed(
-                  1
-                )}{" "}
-                kg
-              </b>
-            </p>
-
-            {/* PACKAGING */}
-
-            <p>
-              <span>
-                Packaging
-              </span>
-
-              <b>
-                {packagingWeight.toFixed(
-                  1
-                )}{" "}
-                kg
-              </b>
-            </p>
-
-            {/* SHIPMENT WEIGHT */}
-
-            <p>
-              <span>
-                Shipment weight
-              </span>
-
-              <b>
-                {totalWeight.toFixed(
-                  1
-                )}{" "}
-                kg
-              </b>
-            </p>
-
-            {/*
-              MINIMUM / REACHED ROW
-              REMOVED FROM SUMMARY
-            */}
-
-            {/* BUNDLE SUBTOTAL */}
-
-            <p>
-              <span>
-                Bundle subtotal
-              </span>
-
-              <b>
-                <Price
-                  inr={
-                    totalInr
-                  }
-                />
-              </b>
-            </p>
-
-            {orderLines.length > 0 && (
-              <p>
-                <span>Transport</span>
-                <b>Confirmed on WhatsApp</b>
-              </p>
-            )}
-
-          </div>
-
-          {/* ===============================================
-              TRANSPORT NOTE
-          =============================================== */}
-
-          <p className="checkoutNote">
-            Transport charges, final packing, availability and payment
-            will be confirmed with you on WhatsApp.
+        {!loading && products.length > 0 && (
+          <p className="productCatalogCount">
+            {visibleProducts.length} {visibleProducts.length === 1 ? "product" : "products"} available
           </p>
+        )}
 
-          {/* ===============================================
-              CONTINUE SHOPPING
-          =============================================== */}
-
-          <Link
-            className="checkoutEdit"
-            href="/build"
-          >
-            ← Continue shopping
-          </Link>
-
-        </aside>
-
+        {loading && products.length === 0 ? (
+          <div className="productCatalogState">
+            <span className="productCatalogSpinner" />
+            <h2>Loading our Godavari collection…</h2>
+            <p>Bringing the latest add-ons directly from our live product sheet.</p>
+          </div>
+        ) : visibleProducts.length > 0 ? (
+          <div className="productCatalogGrid">
+            {visibleProducts.map((item) => (
+              <CatalogCard item={item} key={`${item.catalogType || "bundle"}-${item.id}`} />
+            ))}
+          </div>
+        ) : (
+          <div className="productCatalogState">
+            <h2>{query ? "No matching products" : "Add-ons are being updated"}</h2>
+            <p>
+              {query
+                ? "Try another product name or select a different category."
+                : error || "Please check back shortly for our latest collection."}
+            </p>
+            {source === "error" && (
+              <button type="button" className="goldButton" onClick={() => void refreshCatalog()}>
+                Try Again
+              </button>
+            )}
+          </div>
+        )}
       </section>
 
       <Footer />
-
     </main>
   );
 }
