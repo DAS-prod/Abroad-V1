@@ -1,0 +1,13 @@
+GODAVARI BASKET ABROAD — V2 FINAL
+
+1. This version keeps the approved V2 design and animations.
+2. Catalog/products/categories are loaded from ABROAD_GOOGLE_SHEET_URL only — no demo catalog data.
+3. Set footer/contact values through the NEXT_PUBLIC_* variables shown in .env.example.
+4. Packaging is 0.5 kg per shipment and is counted in totals, but shown only in the final checkout/order summary.
+5. The address/checkout layout is unchanged; only the typography has been normalized to the premium site font system.
+6. The visible brand name is Godavari Basket Abroad and metadata points to abroad.godavaribasket.com.
+
+Validate locally:
+  npm install
+  npm run build
+  npm run dev

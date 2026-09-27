@@ -1,0 +1,12 @@
+import Link from "next/link";
+import Footer from "@/components/Footer";
+
+export default function AboutPage() {
+  return <main className="subPage">
+    <section className="subHero aboutHero"><div className="subHeroBackdrop" /><div className="shell subHeroInner"><div><span className="eyebrow light">OUR GODAVARI</span><h1>More than a region.<br /><em>A way of remembering home.</em></h1><p>Godavari Basket brings together the flavours, traditions, memories and craftsmanship that make the Godavari region feel unmistakably its own.</p></div></div></section>
+    <section className="section shell storyLayout" data-reveal><div className="storyQuote"><span>“</span><h2>From Godavari, With Love.</h2><p>A simple idea: carry the feeling of the region wherever people go.</p></div><div className="storyText"><span className="eyebrow">WHY GODAVARI BASKET EXISTS</span><p>The name Godavari carries many memories at once—the river and delta, coconut groves, village roads, festive kitchens, everyday pantry staples, handmade traditions and food shared generously with family.</p><p>For someone living away from home, a jar of avakai, podi on hot rice, a familiar sweet or an evening snack can bring back an entire place in a moment. Godavari Basket was created around that feeling.</p><p><strong>The abroad store turns that idea into one flexible box.</strong> Instead of forcing customers to shop item by item, it lets them combine curated bundles from different categories until they have a box worth sending across the world.</p><Link className="goldButton" href="/build">Build your first box <span>→</span></Link></div></section>
+    <section className="aboutImageBand" data-reveal><img src="/images/abroad/hero-godavari.webp" alt="Godavari landscape" /><div><span className="eyebrow light">ROOTED HERE</span><h2>Good food. Familiar memories.<br />A little closer to home.</h2></div></section>
+    <section className="section shell principles" data-reveal><article><b>01</b><h3>Regional first</h3><p>The identity begins with Godavari—not a generic Indian grocery catalogue.</p></article><article><b>02</b><h3>Curated, not crowded</h3><p>Bundles make international shopping easier and keep the experience intentional.</p></article><article><b>03</b><h3>Tradition, presented beautifully</h3><p>Warmth and authenticity stay intact while the interface feels modern and premium.</p></article><article><b>04</b><h3>Made to travel</h3><p>The 5 kg+ builder is designed around realistic overseas ordering and packing flows.</p></article></section>
+    <Footer />
+  </main>;
+}
