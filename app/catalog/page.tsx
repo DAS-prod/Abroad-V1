@@ -7,16 +7,6 @@ import { useCatalog } from "@/components/CatalogProvider";
 import type { Bundle } from "@/data/catalog";
 import { useMemo, useState } from "react";
 
-const USD_RATE = 0.012;
-
-function usd(priceInr: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(priceInr * USD_RATE);
-}
-
 function CatalogCard({ item }: { item: Bundle }) {
   const { addBundle, getQuantity } = useBox();
   const [quickView, setQuickView] = useState(false);
@@ -24,37 +14,36 @@ function CatalogCard({ item }: { item: Bundle }) {
 
   return (
     <>
-    <article className="productCatalogCard">
-      <button type="button" className="productCatalogImage" onClick={() => setQuickView(true)} aria-label={`View ${item.name} details`}>
-        <img src={item.image || "/images/brand/logo.webp"} alt={item.name} loading="lazy" />
-        {item.popular && <span className="productCatalogBadge">Popular</span>}
-      </button>
-
-      <div className="productCatalogBody">
-        <span className="productCatalogCategory">
-          {item.categoryName || item.category.replace(/-/g, " ")}
-        </span>
-        <button type="button" className="catalogTitleButton" onClick={() => setQuickView(true)}><h2>{item.name}</h2></button>
-        {item.subtitle && <p>{item.subtitle}</p>}
-
-        {item.items.length > 0 && (
-          <p className="productCatalogContents">
-            {item.items.slice(0, 4).join(" · ")}
-            {item.items.length > 4 ? ` +${item.items.length - 4} more` : ""}
-          </p>
-        )}
-
-        <div className="productCatalogMeta">
-          <strong>{usd(item.priceInr)}</strong>
-          <span>{item.sizeLabel || `${item.weightKg} kg`}</span>
-        </div>
-
-        <button type="button" onClick={() => addBundle(item.id)}>
-          {quantity > 0 ? `Add Another · ${quantity} in Box` : "Add to Custom Box"}
+      <article className="productCatalogCard">
+        <button type="button" className="productCatalogImage" onClick={() => setQuickView(true)} aria-label={`View ${item.name} details`}>
+          <img src={item.image || "/images/brand/logo.webp"} alt={item.name} loading="lazy" />
+          {item.popular && <span className="productCatalogBadge">Popular</span>}
         </button>
-      </div>
-    </article>
-    {quickView && <BundleQuickView bundle={item} onClose={() => setQuickView(false)} />}
+
+        <div className="productCatalogBody">
+          <span className="productCatalogCategory">
+            {item.categoryName || item.category.replace(/-/g, " ")}
+          </span>
+          <button type="button" className="catalogTitleButton" onClick={() => setQuickView(true)}><h2>{item.name}</h2></button>
+          {item.subtitle && <p>{item.subtitle}</p>}
+
+          {item.items.length > 0 && (
+            <p className="productCatalogContents">
+              {item.items.slice(0, 4).join(" · ")}
+              {item.items.length > 4 ? ` +${item.items.length - 4} more` : ""}
+            </p>
+          )}
+
+          <div className="productCatalogMeta">
+            <span>{item.sizeLabel || `${item.weightKg} kg`}</span>
+          </div>
+
+          <button type="button" onClick={() => addBundle(item.id)}>
+            {quantity > 0 ? `Add Another · ${quantity} in Box` : "Add to Custom Box"}
+          </button>
+        </div>
+      </article>
+      {quickView && <BundleQuickView bundle={item} onClose={() => setQuickView(false)} />}
     </>
   );
 }
@@ -101,7 +90,7 @@ export default function CatalogPage() {
           <h1>Explore Our Add-ons</h1>
           <p>
             Authentic Godavari favourites, ready to become part of your custom box.
-            All prices are shown in US dollars.
+            Prices are confirmed with our team on WhatsApp.
           </p>
           <a className="goldButton" href="/build">
             Build Your Custom Box <span>→</span>
