@@ -37,7 +37,11 @@ export default function BundleQuickView({ bundle, onClose }: { bundle: Bundle; o
           <p className="quickViewSubtitle">{bundle.subtitle}</p>
 
           <div className="quickViewPriceRow">
-            <strong><Price inr={bundle.priceInr} /></strong>
+            <strong>
+              {isIndividualProduct
+                ? "Price confirmed on WhatsApp"
+                : <Price inr={bundle.priceInr} />}
+            </strong>
             <span>{bundle.weightKg.toFixed(1)} kg products</span>
           </div>
 
@@ -55,7 +59,14 @@ export default function BundleQuickView({ bundle, onClose }: { bundle: Bundle; o
         </div>
 
         <div className="quickViewAction">
-          <div><small>Bundle price</small><strong><Price inr={bundle.priceInr} /></strong></div>
+          <div>
+            <small>{isIndividualProduct ? "Product price" : "Bundle price"}</small>
+            <strong>
+              {isIndividualProduct
+                ? "Confirmed on WhatsApp"
+                : <Price inr={bundle.priceInr} />}
+            </strong>
+          </div>
           {quantity > 0 ? (
             <div className="cardQty large" aria-label={`${bundle.name} quantity`}>
               <button onClick={() => decrementBundle(bundle.id)} aria-label={`Decrease ${bundle.name}`}>−</button>
