@@ -154,7 +154,7 @@ export default function BundleCard({
           <div className="bundleFooter">
             <strong>
               {bundle.catalogType === "product"
-                ? "Price on WhatsApp"
+                ? "Enquire on WhatsApp"
                 : <Price inr={bundle.priceInr} />}
             </strong>
 
