@@ -30,7 +30,7 @@ type CatalogContextValue = {
 };
 
 const CatalogContext = createContext<CatalogContextValue | null>(null);
-const CATALOG_CACHE_KEY = "gb-abroad-catalog-v2";
+const CATALOG_CACHE_KEY = "gb-abroad-catalog-usd-v1";
 
 function humanize(value: string) {
   return value
