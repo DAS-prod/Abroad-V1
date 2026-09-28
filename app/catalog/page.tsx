@@ -15,22 +15,43 @@ function CatalogCard({ item }: { item: Bundle }) {
   return (
     <>
       <article className="productCatalogCard">
-        <button type="button" className="productCatalogImage" onClick={() => setQuickView(true)} aria-label={`View ${item.name} details`}>
-          <img src={item.image || "/images/brand/logo.webp"} alt={item.name} loading="lazy" />
-          {item.popular && <span className="productCatalogBadge">Popular</span>}
+        <button
+          type="button"
+          className="productCatalogImage"
+          onClick={() => setQuickView(true)}
+          aria-label={`View ${item.name} details`}
+        >
+          <img
+            src={item.image || "/images/brand/logo.webp"}
+            alt={item.name}
+            loading="lazy"
+          />
+          {item.popular && (
+            <span className="productCatalogBadge">Popular</span>
+          )}
         </button>
 
         <div className="productCatalogBody">
           <span className="productCatalogCategory">
             {item.categoryName || item.category.replace(/-/g, " ")}
           </span>
-          <button type="button" className="catalogTitleButton" onClick={() => setQuickView(true)}><h2>{item.name}</h2></button>
+
+          <button
+            type="button"
+            className="catalogTitleButton"
+            onClick={() => setQuickView(true)}
+          >
+            <h2>{item.name}</h2>
+          </button>
+
           {item.subtitle && <p>{item.subtitle}</p>}
 
           {item.items.length > 0 && (
             <p className="productCatalogContents">
               {item.items.slice(0, 4).join(" · ")}
-              {item.items.length > 4 ? ` +${item.items.length - 4} more` : ""}
+              {item.items.length > 4
+                ? ` +${item.items.length - 4} more`
+                : ""}
             </p>
           )}
 
@@ -39,11 +60,19 @@ function CatalogCard({ item }: { item: Bundle }) {
           </div>
 
           <button type="button" onClick={() => addBundle(item.id)}>
-            {quantity > 0 ? `Add Another · ${quantity} in Box` : "Add to Custom Box"}
+            {quantity > 0
+              ? `Add Another · ${quantity} in Box`
+              : "Add to Custom Box"}
           </button>
         </div>
       </article>
-      {quickView && <BundleQuickView bundle={item} onClose={() => setQuickView(false)} />}
+
+      {quickView && (
+        <BundleQuickView
+          bundle={item}
+          onClose={() => setQuickView(false)}
+        />
+      )}
     </>
   );
 }
@@ -56,7 +85,10 @@ export default function CatalogPage() {
   const categories = useMemo(() => {
     const values = new Map<string, string>();
     products.forEach((item) => {
-      values.set(item.category, item.categoryName || item.category.replace(/-/g, " "));
+      values.set(
+        item.category,
+        item.categoryName || item.category.replace(/-/g, " ")
+      );
     });
     return Array.from(values, ([key, name]) => ({ key, name }));
   }, [products]);
@@ -65,7 +97,9 @@ export default function CatalogPage() {
     const needle = query.trim().toLowerCase();
 
     return products.filter((item) => {
-      const matchesCategory = activeCategory === "all" || item.category === activeCategory;
+      const matchesCategory =
+        activeCategory === "all" || item.category === activeCategory;
+
       const searchable = [
         item.name,
         item.subtitle,
@@ -89,8 +123,9 @@ export default function CatalogPage() {
           <span className="eyebrow">GODAVARI BASKET ABROAD</span>
           <h1>Explore Our Add-ons</h1>
           <p>
-            Authentic Godavari favourites, ready to become part of your custom box.
-            Prices are confirmed with our team on WhatsApp.
+            Authentic Godavari favourites, ready to become part of your
+            custom box. Enquire on WhatsApp for product details and
+            availability.
           </p>
           <a className="goldButton" href="/build">
             Build Your Custom Box <span>→</span>
@@ -111,7 +146,10 @@ export default function CatalogPage() {
             />
           </label>
 
-          <div className="productCatalogFilters" aria-label="Catalog categories">
+          <div
+            className="productCatalogFilters"
+            aria-label="Catalog categories"
+          >
             <button
               type="button"
               className={activeCategory === "all" ? "active" : ""}
@@ -119,11 +157,14 @@ export default function CatalogPage() {
             >
               All
             </button>
+
             {categories.map((category) => (
               <button
                 type="button"
                 key={category.key}
-                className={activeCategory === category.key ? "active" : ""}
+                className={
+                  activeCategory === category.key ? "active" : ""
+                }
                 onClick={() => setActiveCategory(category.key)}
               >
                 {category.name}
@@ -134,7 +175,9 @@ export default function CatalogPage() {
 
         {!loading && products.length > 0 && (
           <p className="productCatalogCount">
-            {visibleProducts.length} {visibleProducts.length === 1 ? "product" : "products"} available
+            {visibleProducts.length}{" "}
+            {visibleProducts.length === 1 ? "product" : "products"}{" "}
+            available
           </p>
         )}
 
@@ -142,24 +185,40 @@ export default function CatalogPage() {
           <div className="productCatalogState">
             <span className="productCatalogSpinner" />
             <h2>Loading our Godavari collection…</h2>
-            <p>Bringing the latest add-ons directly from our live product sheet.</p>
+            <p>
+              Bringing the latest add-ons directly from our live product
+              sheet.
+            </p>
           </div>
         ) : visibleProducts.length > 0 ? (
           <div className="productCatalogGrid">
             {visibleProducts.map((item) => (
-              <CatalogCard item={item} key={`${item.catalogType || "bundle"}-${item.id}`} />
+              <CatalogCard
+                item={item}
+                key={`${item.catalogType || "bundle"}-${item.id}`}
+              />
             ))}
           </div>
         ) : (
           <div className="productCatalogState">
-            <h2>{query ? "No matching products" : "Add-ons are being updated"}</h2>
+            <h2>
+              {query
+                ? "No matching products"
+                : "Add-ons are being updated"}
+            </h2>
             <p>
               {query
                 ? "Try another product name or select a different category."
-                : error || "Please check back shortly for our latest collection."}
+                : error ||
+                  "Please check back shortly for our latest collection."}
             </p>
+
             {source === "error" && (
-              <button type="button" className="goldButton" onClick={() => void refreshCatalog()}>
+              <button
+                type="button"
+                className="goldButton"
+                onClick={() => void refreshCatalog()}
+              >
                 Try Again
               </button>
             )}
