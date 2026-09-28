@@ -1431,6 +1431,17 @@ button,input,select,textarea{font-family:"Manrope",Arial,sans-serif}
 .productCatalogBody .catalogSizes button.selected { border-color: #073f31; background: #edf4ef; }
 .catalogSizes small { display: block; margin-top: 3px; font-size: 12px; font-weight: 600; }
 
+.catalogQuickSelector { padding: 14px 0 24px; }
+.catalogQuickSelector h3 { margin: 14px 0 10px; font-family: "Manrope", Arial, sans-serif; font-size: 15px; color: #33291c; }
+.catalogQuickWeights { display: flex; flex-wrap: wrap; gap: 8px; }
+.catalogQuickWeights button { min-width: 68px; padding: 9px 15px; border: 1px solid #d5dadb; border-radius: 30px; background: #fff; color: #30291d; cursor: pointer; }
+.catalogQuickWeights button.selected { background: #294c3d; border-color: #294c3d; color: #fff; }
+.catalogQuickPrice { margin: 20px 0 24px; color: #30291d; font: 700 28px "Manrope", Arial, sans-serif; }
+.catalogQuickPrice span { font-size: 15px; color: #6b645b; }
+.catalogQuickQuantity { display: inline-flex; align-items: center; border: 1px solid #d5dadb; border-radius: 10px; }
+.catalogQuickQuantity button { width: 46px; height: 42px; border: 0; background: transparent; color: #30291d; font-size: 22px; cursor: pointer; }
+.catalogQuickQuantity span { min-width: 32px; text-align: center; font-weight: 700; }
+
 .productCatalogBody button,
 .productCatalogAction {
   width: 100%;
