@@ -219,7 +219,7 @@ export default function BundleCard({
                   : undefined
               }
             >
-              <Price inr={defaultPack?.priceInr || bundle.priceInr} digits={isIndividualProduct ? 2 : 0} />
+              <Price inr={defaultPack?.priceInr || bundle.priceInr} />
             </strong>
 
             {quantity > 0 ? (
