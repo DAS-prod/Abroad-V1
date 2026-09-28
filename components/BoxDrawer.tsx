@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCatalog } from "./CatalogProvider";
 import { useBox } from "./BoxProvider";
-import Price from "./Price";
+import { formatUsd } from "@/data/usd";
 import BundleQuickView from "./BundleQuickView";
 import { useState } from "react";
 import type { Bundle } from "@/data/catalog";
@@ -153,7 +153,7 @@ export default function BoxDrawer() {
 
                       <small>
                         {bundle.sizeLabel || `${bundle.weightKg} kg`} each
-                        {" "}· <Price inr={bundle.priceInr} digits={bundle.catalogType === "product" ? 2 : 0} />
+                        {" "}· {formatUsd(bundle.priceInr)}
                       </small>
 
                       <div className="qty">
@@ -222,7 +222,7 @@ export default function BoxDrawer() {
             <strong
               className={undefined}
             >
-              <Price inr={totalInr} digits={2} />
+              {formatUsd(totalInr)}
             </strong>
           </div>
 
