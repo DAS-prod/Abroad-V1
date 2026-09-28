@@ -21,6 +21,17 @@ type BundleCardProps = {
   syncTargetToBundleWeight?: boolean;
 };
 
+function getItemParts(item: string) {
+  const match = item.match(
+    /^(.*?)\s*\((\d+(?:\.\d+)?\s*(?:kg|g|gm|pieces?|pcs))\)\s*$/i
+  );
+
+  return {
+    name: match ? match[1].trim() : item,
+    weight: match ? match[2].replace(/\s+/g, "") : "",
+  };
+}
+
 export default function BundleCard({
   bundle,
   compact = false,
@@ -56,11 +67,10 @@ export default function BundleCard({
     const rail = itemsRailRef.current;
     if (!rail) return;
 
+    const distance = Math.max(130, rail.clientWidth * 0.72);
+
     rail.scrollBy({
-      left:
-        direction === "right"
-          ? Math.max(130, rail.clientWidth * 0.72)
-          : -Math.max(130, rail.clientWidth * 0.72),
+      left: direction === "right" ? distance : -distance,
       behavior: "smooth",
     });
   };
@@ -98,7 +108,9 @@ export default function BundleCard({
 
             {bundle.popular && <span className="pill">Most loved</span>}
 
-            <span className="weightBadge">{bundle.weightKg} kg</span>
+            <span className="weightBadge">
+              {bundle.weightKg} kg
+            </span>
 
             <span className="imageViewCue">
               View bundle <b>↗</b>
@@ -140,15 +152,30 @@ export default function BundleCard({
               </button>
 
               <div className={styles.itemsRail} ref={itemsRailRef}>
-                {bundle.items.map((item, index) => (
-                  <span
-                    className={styles.itemChip}
-                    key={`${bundle.id}-${item}-${index}`}
-                    title={item}
-                  >
-                    {item}
-                  </span>
-                ))}
+                {bundle.items.map((item, index) => {
+                  const { name, weight } = getItemParts(item);
+
+                  return (
+                    <span
+                      className={styles.itemChip}
+                      key={`${bundle.id}-${item}-${index}`}
+                      title={item}
+                    >
+                      {name}
+                      {weight && (
+                        <b
+                          style={{
+                            marginLeft: 5,
+                            color: "#183923",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {weight}
+                        </b>
+                      )}
+                    </span>
+                  );
+                })}
               </div>
 
               <button
@@ -160,7 +187,9 @@ export default function BundleCard({
                 ›
               </button>
 
-              <small className={styles.scrollHint}>Swipe items ↔</small>
+              <small className={styles.scrollHint}>
+                Swipe items ↔
+              </small>
             </div>
           )}
 
@@ -180,7 +209,11 @@ export default function BundleCard({
             <strong
               style={
                 isIndividualProduct
-                  ? { fontSize: 12, lineHeight: 1.35, fontWeight: 600 }
+                  ? {
+                      fontSize: 12,
+                      lineHeight: 1.35,
+                      fontWeight: 600,
+                    }
                   : undefined
               }
             >
@@ -192,7 +225,10 @@ export default function BundleCard({
             </strong>
 
             {quantity > 0 ? (
-              <div className="cardQty" aria-label={`${bundle.name} quantity`}>
+              <div
+                className="cardQty"
+                aria-label={`${bundle.name} quantity`}
+              >
                 <button
                   type="button"
                   onClick={() => decrementBundle(bundle.id)}
