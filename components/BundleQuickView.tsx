@@ -223,7 +223,7 @@ export default function BundleQuickView({
             <button type="button" className="goldButton quickAdd" onClick={() => {
               for (let i = 0; i < requestedQuantity; i += 1) addBundle(selectedId);
               onClose();
-            }}>Add {requestedQuantity} to Box <span>→</span></button>
+            }}>Add {requestedQuantity} to Cart <span>→</span></button>
           ) : quantity > 0 ? (
             <div
               className="cardQty large"
