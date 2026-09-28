@@ -1,7 +1,8 @@
 "use client";
 
 import { Bundle } from "@/data/catalog";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Price from "./Price";
 import { useBox } from "./BoxProvider";
 
@@ -13,43 +14,54 @@ export default function BundleQuickView({
   onClose: () => void;
 }) {
   const { addBundle, decrementBundle, getQuantity } = useBox();
+  const [mounted, setMounted] = useState(false);
+
   const quantity = getQuantity(bundle.id);
   const isIndividualProduct = bundle.catalogType === "product";
 
   useEffect(() => {
-    const previous = document.body.style.overflow;
+    setMounted(true);
+
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    const onKey = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
 
-    window.addEventListener("keydown", onKey);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previous;
-      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className="quickViewLayer"
       role="dialog"
       aria-modal="true"
       aria-label={`${bundle.name} details`}
+      style={{ zIndex: 10000 }}
     >
       <button
+        type="button"
         className="quickViewBackdrop"
         onClick={onClose}
-        aria-label="Close bundle details"
+        aria-label="Close product details"
       />
 
       <section className="quickViewPanel">
         <div className="quickViewImageWrap">
           <img src={bundle.image} alt={bundle.name} />
+
           {bundle.popular && <span className="pill">Most loved</span>}
+
           <button
+            type="button"
             className="quickViewClose"
             onClick={onClose}
             aria-label="Close"
@@ -62,19 +74,25 @@ export default function BundleQuickView({
           <span className="eyebrow">
             {bundle.items.length} ITEMS · {bundle.weightKg.toFixed(1)} KG BUNDLE
           </span>
+
           <h2>{bundle.name}</h2>
           <p className="quickViewSubtitle">{bundle.subtitle}</p>
 
           <div className="quickViewPriceRow">
             <strong
-              className={isIndividualProduct ? "enquiryLabel" : undefined}
+              style={
+                isIndividualProduct
+                  ? { fontSize: 14, lineHeight: 1.35, fontWeight: 600 }
+                  : undefined
+              }
             >
               {isIndividualProduct ? (
-                "Enquire on WhatsApp"
+                "Price confirmed on WhatsApp"
               ) : (
                 <Price inr={bundle.priceInr} />
               )}
             </strong>
+
             <span>{bundle.weightKg.toFixed(1)} kg products</span>
           </div>
 
@@ -92,6 +110,7 @@ export default function BundleQuickView({
                       : "Curated in this bundle"}
                   </h3>
                 </div>
+
                 <small>{bundle.items.length} products</small>
               </div>
 
@@ -110,13 +129,18 @@ export default function BundleQuickView({
         <div className="quickViewAction">
           <div>
             <small>
-              {isIndividualProduct ? "Product enquiry" : "Bundle price"}
+              {isIndividualProduct ? "Product price" : "Bundle price"}
             </small>
+
             <strong
-              className={isIndividualProduct ? "enquiryLabel" : undefined}
+              style={
+                isIndividualProduct
+                  ? { fontSize: 13, lineHeight: 1.35, fontWeight: 600 }
+                  : undefined
+              }
             >
               {isIndividualProduct ? (
-                "Enquire on WhatsApp"
+                "Confirmed on WhatsApp"
               ) : (
                 <Price inr={bundle.priceInr} />
               )}
@@ -129,13 +153,17 @@ export default function BundleQuickView({
               aria-label={`${bundle.name} quantity`}
             >
               <button
+                type="button"
                 onClick={() => decrementBundle(bundle.id)}
                 aria-label={`Decrease ${bundle.name}`}
               >
                 −
               </button>
+
               <span>{quantity}</span>
+
               <button
+                type="button"
                 onClick={() => addBundle(bundle.id)}
                 aria-label={`Increase ${bundle.name}`}
               >
@@ -144,6 +172,7 @@ export default function BundleQuickView({
             </div>
           ) : (
             <button
+              type="button"
               className="goldButton quickAdd"
               onClick={() => addBundle(bundle.id)}
             >
@@ -152,6 +181,7 @@ export default function BundleQuickView({
           )}
         </div>
       </section>
-    </div>
+    </div>,
+    document.body
   );
 }
