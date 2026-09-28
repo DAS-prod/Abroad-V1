@@ -9,16 +9,7 @@ import {
 
 import Footer from "@/components/Footer";
 import { useBox } from "@/components/BoxProvider";
-import { countries } from "@/data/catalog";
-
-const USD_RATE = countries.find((country) => country.code === "US")!.rate;
-const usdFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-const formatUsd = (inr: number) => usdFormatter.format(inr * USD_RATE);
+import { formatUsd } from "@/data/usd";
 
 export default function CheckoutPage() {
   const {
@@ -218,7 +209,7 @@ export default function CheckoutPage() {
                 1
               )} kg`,
 
-              `Amount: ${formatUsd(lineTotal)} USD`,
+              `Amount: ${formatUsd(lineTotal)}`,
 
               `Includes: ${
                 bundle.items.join(
@@ -274,7 +265,7 @@ export default function CheckoutPage() {
 
       "",
 
-      `Product subtotal: ${formatUsd(totalInr)} USD`,
+      `Product subtotal: ${formatUsd(totalInr)}`,
 
       "Transport: Please confirm on WhatsApp",
 
