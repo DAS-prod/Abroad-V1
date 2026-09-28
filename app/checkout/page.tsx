@@ -20,7 +20,7 @@ export default function CheckoutPage() {
     packagingWeight,
     totalWeight,
 
-    totalInr,
+    totalUsd,
 
     minimumReached,
     remainingToMinimum,
@@ -197,7 +197,7 @@ export default function CheckoutPage() {
               line.quantity;
 
             const lineTotal =
-              bundle.priceInr *
+              bundle.priceUsd *
               line.quantity;
 
             return [
@@ -265,7 +265,7 @@ export default function CheckoutPage() {
 
       "",
 
-      `Product subtotal: ${formatUsd(totalInr)}`,
+      `Product subtotal: ${formatUsd(totalUsd)}`,
 
       "Transport: Please confirm on WhatsApp",
 
@@ -528,7 +528,7 @@ export default function CheckoutPage() {
                       </div>
 
                       <strong>
-                        {formatUsd(bundle.priceInr * line.quantity)}
+                        {formatUsd(bundle.priceUsd * line.quantity)}
                       </strong>
 
                     </article>
@@ -890,7 +890,7 @@ export default function CheckoutPage() {
               </span>
 
               <b>
-                {formatUsd(totalInr)}
+                {formatUsd(totalUsd)}
               </b>
             </p>
 
