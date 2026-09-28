@@ -56,7 +56,7 @@ function CatalogCard({ item }: { item: Bundle }) {
 
           <div className="productCatalogMeta">
             <span>{defaultPack?.size || item.sizeLabel || `${item.weightKg} kg`}</span>
-            <strong><Price inr={defaultPack?.priceInr || item.priceInr} /></strong>
+            <strong><Price usd={defaultPack?.priceUsd || item.priceUsd} /></strong>
           </div>
 
           <button type="button" onClick={() => setQuickView(true)}>
