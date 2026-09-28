@@ -1,14 +1,10 @@
 "use client";
 
-import { useBox } from "./BoxProvider";
-
-export default function Price({ inr, suffix, digits }: { inr: number; suffix?: string; digits?: number }) {
-  const { selectedCountry } = useBox();
-  const value = inr * selectedCountry.rate;
+export default function Price({ usd, suffix, digits }: { usd: number; suffix?: string; digits?: number }) {
   const precision = digits ?? 0;
   return (
-    <span title="Indicative converted price; final checkout can use live pricing">
-      {selectedCountry.symbol}{value.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision })}{suffix || ""}
+    <span>
+      {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: precision, maximumFractionDigits: precision }).format(usd)}{suffix || ""}
     </span>
   );
 }
