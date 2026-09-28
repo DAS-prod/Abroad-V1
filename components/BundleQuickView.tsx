@@ -94,3 +94,142 @@ export default function BundleQuickView({
           <p className="quickViewSubtitle">
             {bundle.subtitle}
           </p>
+
+          <div className="quickViewPriceRow">
+            <strong
+              style={
+                isIndividualProduct
+                  ? {
+                      fontSize: 13,
+                      lineHeight: 1.35,
+                      fontWeight: 600,
+                    }
+                  : undefined
+              }
+            >
+              <Price inr={bundle.priceInr} />
+            </strong>
+
+            <span>
+              {bundle.sizeLabel || `${bundle.weightKg.toFixed(1)} kg products`}
+            </span>
+          </div>
+
+          {(!isIndividualProduct ||
+            bundle.items.some((item) => item !== bundle.name)) && (
+            <div className="quickViewInside">
+              <div className="quickViewSectionHead">
+                <div>
+                  <span className="eyebrow">
+                    {isIndividualProduct
+                      ? "PRODUCT DETAILS"
+                      : "WHAT'S INSIDE"}
+                  </span>
+
+                  <h3>
+                    {isIndividualProduct
+                      ? "About this product"
+                      : "Curated in this bundle"}
+                  </h3>
+                </div>
+
+                <small>
+                  {bundle.items.length} products
+                </small>
+              </div>
+
+              <div className="quickViewItems">
+                {bundle.items.map((item, index) => {
+                  const { name, weight } = getItemParts(item);
+
+                  return (
+                    <div key={`${item}-${index}`}>
+                      <span>
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+
+                      <b>
+                        {name}
+                        {weight && (
+                          <small
+                            style={{
+                              display: "block",
+                              marginTop: 3,
+                              fontSize: 10,
+                              color: "#89754b",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {weight}
+                          </small>
+                        )}
+                      </b>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="quickViewAction">
+          <div>
+            <small>
+              {isIndividualProduct
+                ? "Product price"
+                : "Bundle price"}
+            </small>
+
+            <strong
+              style={
+                isIndividualProduct
+                  ? {
+                      fontSize: 12,
+                      lineHeight: 1.35,
+                      fontWeight: 600,
+                    }
+                  : undefined
+              }
+            >
+              <Price inr={bundle.priceInr} />
+            </strong>
+          </div>
+
+          {quantity > 0 ? (
+            <div
+              className="cardQty large"
+              aria-label={`${bundle.name} quantity`}
+            >
+              <button
+                type="button"
+                onClick={() => decrementBundle(bundle.id)}
+                aria-label={`Decrease ${bundle.name}`}
+              >
+                −
+              </button>
+
+              <span>{quantity}</span>
+
+              <button
+                type="button"
+                onClick={() => addBundle(bundle.id)}
+                aria-label={`Increase ${bundle.name}`}
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="goldButton quickAdd"
+              onClick={() => addBundle(bundle.id)}
+            >
+              Add bundle to box <span>→</span>
+            </button>
+          )}
+        </div>
+      </section>
+    </div>,
+    document.body
+  );
+}
