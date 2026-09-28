@@ -45,7 +45,7 @@ type BoxContextValue = {
 
   totalWeight: number;
 
-  totalInr: number;
+  totalUsd: number;
 
 
   itemCount: number;
@@ -110,7 +110,7 @@ const SSR_BOX_FALLBACK: BoxContextValue = {
 
   totalWeight: 0,
 
-  totalInr: 0,
+  totalUsd: 0,
 
 
   itemCount: 0,
@@ -218,7 +218,7 @@ export function BoxProvider({
           id: variant.id,
           sizeLabel: variant.size,
           weightKg: variant.weightKg,
-          priceInr: variant.priceInr,
+          priceUsd: variant.priceUsd,
           variants: undefined,
         }))),
         ...bundles,
@@ -424,9 +424,9 @@ export function BoxProvider({
     );
 
   /*
-   * Total products INR value.
+   * Total products USD value, read directly from the Sheets.
    */
-  const totalInr =
+  const totalUsd =
     useMemo(() => {
       return lines.reduce(
         (
@@ -445,7 +445,7 @@ export function BoxProvider({
           return (
             sum +
             (
-              bundle?.priceInr ||
+              bundle?.priceUsd ||
               0
             ) *
               line.quantity
@@ -723,7 +723,7 @@ export function BoxProvider({
 
       totalWeight,
 
-      totalInr,
+      totalUsd,
 
 
       itemCount,
