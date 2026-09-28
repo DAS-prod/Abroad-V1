@@ -2,19 +2,14 @@
 
 import Footer from "@/components/Footer";
 import BundleQuickView from "@/components/BundleQuickView";
-import { useBox } from "@/components/BoxProvider";
 import { useCatalog } from "@/components/CatalogProvider";
 import type { Bundle } from "@/data/catalog";
 import Price from "@/components/Price";
 import { useMemo, useState } from "react";
 
 function CatalogCard({ item }: { item: Bundle }) {
-  const { addBundle, getQuantity } = useBox();
   const [quickView, setQuickView] = useState(false);
-  const [size, setSize] = useState(item.variants?.[0]?.size || item.sizeLabel || "");
-  const selected = item.variants?.find((variant) => variant.size === size);
-  const selectedItem = selected ? { ...item, id: selected.id, sizeLabel: selected.size, weightKg: selected.weightKg, priceInr: selected.priceInr, variants: undefined } : item;
-  const quantity = getQuantity(selectedItem.id);
+  const defaultPack = item.variants?.find(v => v.size === "250g") || item.variants?.[0];
 
   return (
     <>
@@ -60,33 +55,19 @@ function CatalogCard({ item }: { item: Bundle }) {
           )}
 
           <div className="productCatalogMeta">
-            <strong><Price inr={selectedItem.priceInr} /></strong>
-            <span>{selectedItem.sizeLabel || `${item.weightKg} kg`}</span>
+            <span>{defaultPack?.size || item.sizeLabel || `${item.weightKg} kg`}</span>
+            <strong><Price inr={defaultPack?.priceInr || item.priceInr} digits={2} /></strong>
           </div>
 
-          {item.variants && (
-            <div className="catalogSizes" aria-label={`Choose ${item.name} size`}>
-              {item.variants.map((variant) => (
-                <button type="button" key={variant.id}
-                  className={size === variant.size ? "selected" : ""}
-                  onClick={() => setSize(variant.size)}>
-                  {variant.size}<small><Price inr={variant.priceInr} /></small>
-                </button>
-              ))}
-            </div>
-          )}
-
-          <button type="button" onClick={() => addBundle(selectedItem.id)}>
-            {quantity > 0
-              ? `Add Another · ${quantity} in Box`
-              : "Add to Custom Box"}
+          <button type="button" onClick={() => setQuickView(true)}>
+            Choose Size & Quantity
           </button>
         </div>
       </article>
 
       {quickView && (
         <BundleQuickView
-          bundle={selectedItem}
+          bundle={item}
           onClose={() => setQuickView(false)}
         />
       )}
