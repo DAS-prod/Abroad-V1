@@ -8,8 +8,17 @@ import {
 } from "react";
 
 import Footer from "@/components/Footer";
-import Price from "@/components/Price";
 import { useBox } from "@/components/BoxProvider";
+import { countries } from "@/data/catalog";
+
+const USD_RATE = countries.find((country) => country.code === "US")!.rate;
+const usdFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const formatUsd = (inr: number) => usdFormatter.format(inr * USD_RATE);
 
 export default function CheckoutPage() {
   const {
@@ -209,7 +218,7 @@ export default function CheckoutPage() {
                 1
               )} kg`,
 
-              `Amount: INR ${lineTotal.toFixed(2)}`,
+              `Amount: ${formatUsd(lineTotal)} USD`,
 
               `Includes: ${
                 bundle.items.join(
@@ -265,7 +274,7 @@ export default function CheckoutPage() {
 
       "",
 
-      `Product subtotal: INR ${totalInr.toFixed(2)}`,
+      `Product subtotal: ${formatUsd(totalInr)} USD`,
 
       "Transport: Please confirm on WhatsApp",
 
@@ -528,7 +537,7 @@ export default function CheckoutPage() {
                       </div>
 
                       <strong>
-                        <Price inr={bundle.priceInr * line.quantity} digits={2} />
+                        {formatUsd(bundle.priceInr * line.quantity)}
                       </strong>
 
                     </article>
@@ -890,7 +899,7 @@ export default function CheckoutPage() {
               </span>
 
               <b>
-                <Price inr={totalInr} digits={2} />
+                {formatUsd(totalInr)}
               </b>
             </p>
 
