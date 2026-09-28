@@ -60,7 +60,7 @@ function CatalogCard({ item }: { item: Bundle }) {
           </div>
 
           <button type="button" onClick={() => setQuickView(true)}>
-            Choose Size & Quantity
+            Add to Cart
           </button>
         </div>
       </article>
