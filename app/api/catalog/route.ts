@@ -1048,7 +1048,7 @@ export async function GET() {
      BUILD INDIVIDUAL PRODUCTS
   --------------------------- */
 
-  const products =
+  const productEntries =
     productRows
       .map(
         (
@@ -1076,10 +1076,50 @@ export async function GET() {
           const priceInr = inr > 0 ? inr : usd > 0 ? usd / 0.01042 : 0;
           return priceInr > 0 ? [{ size, weightKg, priceInr, id: `${item.id}-${size}` }] : [];
         });
+        const rowSize = (row.size || item.sizeLabel || "").replace(/\s+/g, "").toLowerCase();
+        const rowVariant = sizes.find(({ size }) => rowSize === size);
+        if (rowVariant && item.priceInr > 0 && !variants.some(v => v.size === rowVariant.size)) {
+          variants.push({ ...rowVariant, priceInr: item.priceInr, id: `${item.id}-${rowVariant.size}` });
+        }
         if (!variants.length && item.priceInr <= 0) return null;
         return { ...item, priceInr: variants.find(v => v.size === "1kg")?.priceInr || variants[0]?.priceInr || item.priceInr, variants: variants.length ? variants : undefined } as Bundle;
       })
       .filter((item): item is Bundle => Boolean(item));
+
+  // A product may have one Sheet row per size. Keep one card per product.
+  const groupedProducts = new Map<string, Bundle>();
+  for (const item of productEntries) {
+    const name = item.name.replace(/\s*[-–(]?\s*(250\s*g|500\s*g|1\s*kg)\s*\)?\s*$/i, "").trim();
+    const key = `${item.category.toLowerCase()}|${name.toLowerCase()}`;
+    const existing = groupedProducts.get(key);
+    const variants = [...(existing?.variants || []), ...(item.variants || [])];
+    const distinct = ["250g", "500g", "1kg"].flatMap(size => {
+      const matches = variants.filter(v => v.size === size);
+      const selected = matches.find(v => v.priceInr > 0);
+      return selected ? [selected] : [];
+    });
+    groupedProducts.set(key, { ...(existing || item), name, variants: distinct.length ? distinct : undefined });
+  }
+
+  const products = Array.from(groupedProducts.values()).map(item => {
+    const variants = [...(item.variants || [])];
+    const kilogram = variants.find(v => v.size === "1kg");
+    // Where the Sheet supplies only a 1kg price, use proportional pack prices.
+    if (kilogram) {
+      for (const [size, weightKg] of [["250g", 0.25], ["500g", 0.5]] as const) {
+        if (!variants.some(v => v.size === size)) variants.push({
+          size, weightKg, priceInr: Math.round(kilogram.priceInr * weightKg * 100) / 100,
+          id: `${item.id}-${size}`,
+        });
+      }
+    }
+    variants.sort((a, b) => a.weightKg - b.weightKg);
+    const first = variants[0];
+    return { ...item, variants: variants.length ? variants : undefined,
+      priceInr: first?.priceInr || item.priceInr,
+      sizeLabel: first?.size || item.sizeLabel,
+      weightKg: first?.weightKg || item.weightKg };
+  });
 
   /* ---------------------------
      BUILD COMBOS
