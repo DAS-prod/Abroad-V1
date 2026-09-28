@@ -109,7 +109,7 @@ export default function BundleQuickView({
                     onClick={() => setSelectedSize(variant.size)}>{variant.size}</button>
                 ))}
               </div>
-              <div className="catalogQuickPrice"><Price inr={selectedPrice} digits={2} /> <span>/ {selectedWeight}</span></div>
+              <div className="catalogQuickPrice"><Price inr={selectedPrice} /> <span>/ {selectedWeight}</span></div>
               <h3>Quantity</h3>
               <div className="catalogQuickQuantity" role="group" aria-label="Quantity">
                 <button type="button" onClick={() => setRequestedQuantity(q => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
