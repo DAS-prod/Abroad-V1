@@ -34,16 +34,20 @@ export default function BundleCard({
     getQuantity,
     setSelectedBoxKg,
   } = useBox();
+
   const { bundles } = useCatalog();
   const [quickView, setQuickView] = useState(false);
   const itemsRailRef = useRef<HTMLDivElement | null>(null);
+
   const quantity = getQuantity(bundle.id);
+  const isIndividualProduct = bundle.catalogType === "product";
 
   const pairing = useMemo(() => {
     return (
       bundles.find(
         (candidate) =>
-          candidate.id !== bundle.id && candidate.category !== bundle.category
+          candidate.id !== bundle.id &&
+          candidate.category !== bundle.category
       ) || bundles.find((candidate) => candidate.id !== bundle.id)
     );
   }, [bundles, bundle.id, bundle.category]);
@@ -53,7 +57,10 @@ export default function BundleCard({
     if (!rail) return;
 
     rail.scrollBy({
-      left: direction === "right" ? Math.max(130, rail.clientWidth * 0.72) : -Math.max(130, rail.clientWidth * 0.72),
+      left:
+        direction === "right"
+          ? Math.max(130, rail.clientWidth * 0.72)
+          : -Math.max(130, rail.clientWidth * 0.72),
       behavior: "smooth",
     });
   };
@@ -62,6 +69,7 @@ export default function BundleCard({
     if (syncTargetToBundleWeight) {
       setSelectedBoxKg(bundle.weightKg);
     }
+
     addBundle(bundle.id);
   };
 
@@ -75,6 +83,7 @@ export default function BundleCard({
         style={{ "--reveal-order": revealIndex } as CSSProperties}
       >
         <button
+          type="button"
           className="bundleImageButton"
           onClick={() => setQuickView(true)}
           aria-label={`View ${bundle.name} details`}
@@ -86,29 +95,41 @@ export default function BundleCard({
               className="bundleImage"
               loading="lazy"
             />
+
             {bundle.popular && <span className="pill">Most loved</span>}
+
             <span className="weightBadge">{bundle.weightKg} kg</span>
+
             <span className="imageViewCue">
               View bundle <b>↗</b>
             </span>
+
             <div className="imageGlow" />
           </div>
         </button>
 
         <div className="bundleBody">
           <div>
-            <p className="eyebrow">{bundle.items.length} curated favourites</p>
+            <p className="eyebrow">
+              {bundle.items.length} curated favourites
+            </p>
+
             <button
+              type="button"
               className="bundleTitleButton"
               onClick={() => setQuickView(true)}
             >
               <h3>{bundle.name}</h3>
             </button>
+
             <p className="bundleSubtitle">{bundle.subtitle}</p>
           </div>
 
           {!compact && bundle.items.length > 0 && (
-            <div className={styles.itemsArea} aria-label={`${bundle.name} included items`}>
+            <div
+              className={styles.itemsArea}
+              aria-label={`${bundle.name} included items`}
+            >
               <button
                 type="button"
                 className={styles.scrollButton}
@@ -144,7 +165,11 @@ export default function BundleCard({
           )}
 
           {!compact && pairing && (
-            <button className="pairingHint" onClick={() => setQuickView(true)}>
+            <button
+              type="button"
+              className="pairingHint"
+              onClick={() => setQuickView(true)}
+            >
               <span>Pairs well with</span>
               <b>{pairing.name}</b>
               <i>→</i>
@@ -152,22 +177,34 @@ export default function BundleCard({
           )}
 
           <div className="bundleFooter">
-            <strong>
-              {bundle.catalogType === "product"
-                ? "Enquire on WhatsApp"
-                : <Price inr={bundle.priceInr} />}
+            <strong
+              style={
+                isIndividualProduct
+                  ? { fontSize: 12, lineHeight: 1.35, fontWeight: 600 }
+                  : undefined
+              }
+            >
+              {isIndividualProduct ? (
+                "Price on WhatsApp"
+              ) : (
+                <Price inr={bundle.priceInr} />
+              )}
             </strong>
 
             {quantity > 0 ? (
               <div className="cardQty" aria-label={`${bundle.name} quantity`}>
                 <button
+                  type="button"
                   onClick={() => decrementBundle(bundle.id)}
                   aria-label={`Decrease ${bundle.name}`}
                 >
                   −
                 </button>
+
                 <span>{quantity}</span>
+
                 <button
+                  type="button"
                   onClick={addSelectedBundle}
                   aria-label={`Increase ${bundle.name}`}
                 >
@@ -175,7 +212,11 @@ export default function BundleCard({
                 </button>
               </div>
             ) : (
-              <button className="addBundleButton" onClick={addSelectedBundle}>
+              <button
+                type="button"
+                className="addBundleButton"
+                onClick={addSelectedBundle}
+              >
                 Add to box <span>＋</span>
               </button>
             )}
@@ -184,7 +225,10 @@ export default function BundleCard({
       </article>
 
       {quickView && (
-        <BundleQuickView bundle={bundle} onClose={() => setQuickView(false)} />
+        <BundleQuickView
+          bundle={bundle}
+          onClose={() => setQuickView(false)}
+        />
       )}
     </>
   );
