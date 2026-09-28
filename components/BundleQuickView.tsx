@@ -6,6 +6,17 @@ import { createPortal } from "react-dom";
 import Price from "./Price";
 import { useBox } from "./BoxProvider";
 
+function getItemParts(item: string) {
+  const match = item.match(
+    /^(.*?)\s*\((\d+(?:\.\d+)?\s*(?:kg|g|gm|pieces?|pcs))\)\s*$/i
+  );
+
+  return {
+    name: match ? match[1].trim() : item,
+    weight: match ? match[2].replace(/\s+/g, "") : "",
+  };
+}
+
 export default function BundleQuickView({
   bundle,
   onClose,
@@ -58,7 +69,9 @@ export default function BundleQuickView({
         <div className="quickViewImageWrap">
           <img src={bundle.image} alt={bundle.name} />
 
-          {bundle.popular && <span className="pill">Most loved</span>}
+          {bundle.popular && (
+            <span className="pill">Most loved</span>
+          )}
 
           <button
             type="button"
@@ -72,17 +85,25 @@ export default function BundleQuickView({
 
         <div className="quickViewBody">
           <span className="eyebrow">
-            {bundle.items.length} ITEMS · {bundle.weightKg.toFixed(1)} KG BUNDLE
+            {bundle.items.length} ITEMS ·{" "}
+            {bundle.weightKg.toFixed(1)} KG BUNDLE
           </span>
 
           <h2>{bundle.name}</h2>
-          <p className="quickViewSubtitle">{bundle.subtitle}</p>
+
+          <p className="quickViewSubtitle">
+            {bundle.subtitle}
+          </p>
 
           <div className="quickViewPriceRow">
             <strong
               style={
                 isIndividualProduct
-                  ? { fontSize: 13, lineHeight: 1.35, fontWeight: 600 }
+                  ? {
+                      fontSize: 13,
+                      lineHeight: 1.35,
+                      fontWeight: 600,
+                    }
                   : undefined
               }
             >
@@ -93,7 +114,9 @@ export default function BundleQuickView({
               )}
             </strong>
 
-            <span>{bundle.weightKg.toFixed(1)} kg products</span>
+            <span>
+              {bundle.weightKg.toFixed(1)} kg products
+            </span>
           </div>
 
           {(!isIndividualProduct ||
@@ -102,8 +125,11 @@ export default function BundleQuickView({
               <div className="quickViewSectionHead">
                 <div>
                   <span className="eyebrow">
-                    {isIndividualProduct ? "PRODUCT DETAILS" : "WHAT'S INSIDE"}
+                    {isIndividualProduct
+                      ? "PRODUCT DETAILS"
+                      : "WHAT'S INSIDE"}
                   </span>
+
                   <h3>
                     {isIndividualProduct
                       ? "About this product"
@@ -111,16 +137,40 @@ export default function BundleQuickView({
                   </h3>
                 </div>
 
-                <small>{bundle.items.length} products</small>
+                <small>
+                  {bundle.items.length} products
+                </small>
               </div>
 
               <div className="quickViewItems">
-                {bundle.items.map((item, index) => (
-                  <div key={`${item}-${index}`}>
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <b>{item}</b>
-                  </div>
-                ))}
+                {bundle.items.map((item, index) => {
+                  const { name, weight } = getItemParts(item);
+
+                  return (
+                    <div key={`${item}-${index}`}>
+                      <span>
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+
+                      <b>
+                        {name}
+                        {weight && (
+                          <small
+                            style={{
+                              display: "block",
+                              marginTop: 3,
+                              fontSize: 10,
+                              color: "#89754b",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {weight}
+                          </small>
+                        )}
+                      </b>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -129,13 +179,19 @@ export default function BundleQuickView({
         <div className="quickViewAction">
           <div>
             <small>
-              {isIndividualProduct ? "Product price" : "Bundle price"}
+              {isIndividualProduct
+                ? "Product price"
+                : "Bundle price"}
             </small>
 
             <strong
               style={
                 isIndividualProduct
-                  ? { fontSize: 12, lineHeight: 1.35, fontWeight: 600 }
+                  ? {
+                      fontSize: 12,
+                      lineHeight: 1.35,
+                      fontWeight: 600,
+                    }
                   : undefined
               }
             >
@@ -148,7 +204,10 @@ export default function BundleQuickView({
           </div>
 
           {quantity > 0 ? (
-            <div className="cardQty large" aria-label={`${bundle.name} quantity`}>
+            <div
+              className="cardQty large"
+              aria-label={`${bundle.name} quantity`}
+            >
               <button
                 type="button"
                 onClick={() => decrementBundle(bundle.id)}
@@ -156,7 +215,9 @@ export default function BundleQuickView({
               >
                 −
               </button>
+
               <span>{quantity}</span>
+
               <button
                 type="button"
                 onClick={() => addBundle(bundle.id)}
