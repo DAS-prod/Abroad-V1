@@ -61,9 +61,6 @@ export default function CheckoutPage() {
       getBundle,
     ]);
 
-  const hasCatalogProducts = orderLines.some(
-    (line) => line.bundle?.catalogType === "product"
-  );
 
   /* ======================================================
      SUBMIT TO WHATSAPP
@@ -212,9 +209,7 @@ export default function CheckoutPage() {
                 1
               )} kg`,
 
-              bundle.catalogType === "product"
-                ? "Price: Please confirm on WhatsApp"
-                : `Amount: INR ${lineTotal}`,
+              `Amount: INR ${lineTotal.toFixed(2)}`,
 
               `Includes: ${
                 bundle.items.join(
@@ -270,11 +265,7 @@ export default function CheckoutPage() {
 
       "",
 
-      hasCatalogProducts
-        ? "Order price: Please confirm on WhatsApp"
-        : `Bundle subtotal: INR ${Math.round(
-            totalInr
-          ).toLocaleString()}`,
+      `Product subtotal: INR ${totalInr.toFixed(2)}`,
 
       "Transport: Please confirm on WhatsApp",
 
@@ -537,9 +528,7 @@ export default function CheckoutPage() {
                       </div>
 
                       <strong>
-                        {bundle.catalogType === "product"
-                          ? "Price on WhatsApp"
-                          : <Price inr={bundle.priceInr * line.quantity} />}
+                        <Price inr={bundle.priceInr * line.quantity} digits={2} />
                       </strong>
 
                     </article>
@@ -897,13 +886,11 @@ export default function CheckoutPage() {
 
             <p>
               <span>
-                Bundle subtotal
+                Product subtotal
               </span>
 
               <b>
-                {hasCatalogProducts
-                  ? "Confirmed on WhatsApp"
-                  : <Price inr={totalInr} />}
+                <Price inr={totalInr} digits={2} />
               </b>
             </p>
 
