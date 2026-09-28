@@ -1639,3 +1639,18 @@ button,input,select,textarea{font-family:"Manrope",Arial,sans-serif}
 @media(max-width:370px){.editorialTabTitle{font-size:11px}}
 .editorialTab{position:relative}
 body{overflow-x:clip}
+
+/* WhatsApp enquiry text */
+.enquiryLabel {
+  font-family: "Manrope", Arial, sans-serif !important;
+  font-size: clamp(12px, 1.15vw, 15px) !important;
+  font-weight: 700 !important;
+  line-height: 1.4;
+  letter-spacing: 0 !important;
+}
+
+@media (max-width: 700px) {
+  .enquiryLabel {
+    font-size: 12px !important;
+  }
+}
