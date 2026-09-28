@@ -17,7 +17,7 @@ export default function BoxDrawer() {
     drawerOpen,
     setDrawerOpen,
     totalWeight,
-    totalInr,
+    totalUsd,
     minimumReached,
     remainingToMinimum,
     addBundle,
@@ -153,7 +153,7 @@ export default function BoxDrawer() {
 
                       <small>
                         {bundle.sizeLabel || `${bundle.weightKg} kg`} each
-                        {" "}· {formatUsd(bundle.priceInr)}
+                        {" "}· {formatUsd(bundle.priceUsd)}
                       </small>
 
                       <div className="qty">
@@ -222,7 +222,7 @@ export default function BoxDrawer() {
             <strong
               className={undefined}
             >
-              {formatUsd(totalInr)}
+              {formatUsd(totalUsd)}
             </strong>
           </div>
 
