@@ -1,3 +1,131 @@
+"use client";
+
+import Footer from "@/components/Footer";
+import BundleQuickView from "@/components/BundleQuickView";
+import { useBox } from "@/components/BoxProvider";
+import { useCatalog } from "@/components/CatalogProvider";
+import type { Bundle } from "@/data/catalog";
+import Price from "@/components/Price";
+import { useMemo, useState } from "react";
+
+function CatalogCard({ item }: { item: Bundle }) {
+  const { addBundle, getQuantity } = useBox();
+  const [quickView, setQuickView] = useState(false);
+  const [size, setSize] = useState(item.variants?.[0]?.size || item.sizeLabel || "");
+  const selected = item.variants?.find((variant) => variant.size === size);
+  const selectedItem = selected ? { ...item, id: selected.id, sizeLabel: selected.size, weightKg: selected.weightKg, priceInr: selected.priceInr, variants: undefined } : item;
+  const quantity = getQuantity(selectedItem.id);
+
+  return (
+    <>
+      <article className="productCatalogCard">
+        <button
+          type="button"
+          className="productCatalogImage"
+          onClick={() => setQuickView(true)}
+          aria-label={`View ${item.name} details`}
+        >
+          <img
+            src={item.image || "/images/brand/logo.webp"}
+            alt={item.name}
+            loading="lazy"
+          />
+          {item.popular && (
+            <span className="productCatalogBadge">Popular</span>
+          )}
+        </button>
+
+        <div className="productCatalogBody">
+          <span className="productCatalogCategory">
+            {item.categoryName || item.category.replace(/-/g, " ")}
+          </span>
+
+          <button
+            type="button"
+            className="catalogTitleButton"
+            onClick={() => setQuickView(true)}
+          >
+            <h2>{item.name}</h2>
+          </button>
+
+          {item.subtitle && <p>{item.subtitle}</p>}
+
+          {item.items.length > 0 && (
+            <p className="productCatalogContents">
+              {item.items.slice(0, 4).join(" · ")}
+              {item.items.length > 4
+                ? ` +${item.items.length - 4} more`
+                : ""}
+            </p>
+          )}
+
+          <div className="productCatalogMeta">
+            <strong><Price inr={selectedItem.priceInr} /></strong>
+            <span>{selectedItem.sizeLabel || `${item.weightKg} kg`}</span>
+          </div>
+
+          {item.variants && (
+            <div className="catalogSizes" aria-label={`Choose ${item.name} size`}>
+              {item.variants.map((variant) => (
+                <button type="button" key={variant.id}
+                  className={size === variant.size ? "selected" : ""}
+                  onClick={() => setSize(variant.size)}>
+                  {variant.size}<small><Price inr={variant.priceInr} /></small>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button type="button" onClick={() => addBundle(selectedItem.id)}>
+            {quantity > 0
+              ? `Add Another · ${quantity} in Box`
+              : "Add to Custom Box"}
+          </button>
+        </div>
+      </article>
+
+      {quickView && (
+        <BundleQuickView
+          bundle={selectedItem}
+          onClose={() => setQuickView(false)}
+        />
+      )}
+    </>
+  );
+}
+
+export default function CatalogPage() {
+  const { products, loading, error, source, refreshCatalog } = useCatalog();
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  const categories = useMemo(() => {
+    const values = new Map<string, string>();
+    products.forEach((item) => {
+      values.set(
+        item.category,
+        item.categoryName || item.category.replace(/-/g, " ")
+      );
+    });
+    return Array.from(values, ([key, name]) => ({ key, name }));
+  }, [products]);
+
+  const visibleProducts = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+
+    return products.filter((item) => {
+      const matchesCategory =
+        activeCategory === "all" || item.category === activeCategory;
+
+      const searchable = [
+        item.name,
+        item.subtitle,
+        item.categoryName,
+        item.subcategory,
+        ...(item.items || []),
+        ...(item.tags || []),
+      ]
+        .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
