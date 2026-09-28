@@ -11,6 +11,7 @@ import type { Bundle } from "@/data/catalog";
 export default function BoxDrawer() {
   const [selectedDetail, setSelectedDetail] = useState<Bundle | null>(null);
   const { bundles } = useCatalog();
+
   const {
     lines,
     drawerOpen,
@@ -116,7 +117,9 @@ export default function BoxDrawer() {
               <div className="emptyBox">
                 <span>◇</span>
                 <h3>Your box is waiting.</h3>
-                <p>Choose curated bundles and build a shipment of at least 5 kg.</p>
+                <p>
+                  Choose curated bundles and build a shipment of at least 5 kg.
+                </p>
                 <Link href="/build" onClick={() => setDrawerOpen(false)}>
                   Start building →
                 </Link>
@@ -128,19 +131,41 @@ export default function BoxDrawer() {
 
                 return (
                   <div className="drawerLine" key={line.bundleId}>
-                    <button className="drawerDetailImage" type="button" onClick={() => setSelectedDetail(bundle)} aria-label={`View ${bundle.name} details`}><img src={bundle.image} alt="" /></button>
+                    <button
+                      className="drawerDetailImage"
+                      type="button"
+                      onClick={() => setSelectedDetail(bundle)}
+                      aria-label={`View ${bundle.name} details`}
+                    >
+                      <img src={bundle.image} alt="" />
+                    </button>
+
                     <div className="lineCopy">
-                      <button type="button" className="drawerDetailTitle" onClick={() => setSelectedDetail(bundle)}>{bundle.name}</button>
+                      <button
+                        type="button"
+                        className="drawerDetailTitle"
+                        onClick={() => setSelectedDetail(bundle)}
+                      >
+                        {bundle.name}
+                      </button>
+
                       <small>
                         {bundle.items.slice(0, 3).join(" · ")}
                         {bundle.items.length > 3 ? " + more" : ""}
                       </small>
+
                       <small>
                         {bundle.sizeLabel || `${bundle.weightKg} kg`} each
-                        {bundle.catalogType === "product"
-                          ? " · Price on WhatsApp"
-                          : <> · <Price inr={bundle.priceInr} /></>}
+                        {bundle.catalogType === "product" ? (
+                          " · Enquire on WhatsApp"
+                        ) : (
+                          <>
+                            {" "}
+                            · <Price inr={bundle.priceInr} />
+                          </>
+                        )}
                       </small>
+
                       <div className="qty">
                         <button
                           onClick={() => decrementBundle(bundle.id)}
@@ -157,6 +182,7 @@ export default function BoxDrawer() {
                         </button>
                       </div>
                     </div>
+
                     <button
                       className="remove"
                       onClick={() => removeBundle(bundle.id)}
@@ -174,14 +200,17 @@ export default function BoxDrawer() {
             <div className="topUp">
               <div className="topUpHead">
                 <p>
-                  <b>Almost there.</b> Add around {remainingToMinimum.toFixed(1)} kg
-                  to reach the 5 kg minimum.
+                  <b>Almost there.</b> Add around{" "}
+                  {remainingToMinimum.toFixed(1)} kg to reach the 5 kg minimum.
                 </p>
                 <span>Suggested</span>
               </div>
               <div className="miniSuggestions">
                 {suggested.map((bundle) => (
-                  <button key={bundle.id} onClick={() => addBundle(bundle.id)}>
+                  <button
+                    key={bundle.id}
+                    onClick={() => addBundle(bundle.id)}
+                  >
                     <img src={bundle.image} alt="" />
                     <span>
                       <b>{bundle.name}</b>
@@ -197,19 +226,23 @@ export default function BoxDrawer() {
 
         <div className="drawerBottom">
           <div className="totalLine">
-            <span>Order price</span>
-            <strong>
-              {hasCatalogProducts
-                ? "Confirmed on WhatsApp"
-                : <Price inr={totalInr} />}
+            <span>
+              {hasCatalogProducts ? "Order enquiry" : "Order price"}
+            </span>
+            <strong
+              className={hasCatalogProducts ? "enquiryLabel" : undefined}
+            >
+              {hasCatalogProducts ? (
+                "Enquire on WhatsApp"
+              ) : (
+                <Price inr={totalInr} />
+              )}
             </strong>
           </div>
 
           {lines.length > 0 && (
             <div className="totalLine">
-              <span>
-                Transport
-              </span>
+              <span>Transport</span>
               <strong>Confirmed on WhatsApp</strong>
             </div>
           )}
@@ -232,7 +265,10 @@ export default function BoxDrawer() {
                 Checkout <span>→</span>
               </Link>
             ) : (
-              <button className="goldButton drawerCheckout disabled" disabled>
+              <button
+                className="goldButton drawerCheckout disabled"
+                disabled
+              >
                 Checkout <span>→</span>
               </button>
             )}
@@ -245,7 +281,13 @@ export default function BoxDrawer() {
           )}
         </div>
       </aside>
-      {selectedDetail && <BundleQuickView bundle={selectedDetail} onClose={() => setSelectedDetail(null)} />}
+
+      {selectedDetail && (
+        <BundleQuickView
+          bundle={selectedDetail}
+          onClose={() => setSelectedDetail(null)}
+        />
+      )}
     </>
   );
 }
