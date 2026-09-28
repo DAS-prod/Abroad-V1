@@ -1,173 +1,279 @@
-export const PACKAGING_WEIGHT_KG = 0.3;
+"use client";
 
-// =========================================================
-// CATEGORIES
-// =========================================================
+import Link from "next/link";
+import { useCatalog } from "./CatalogProvider";
+import { useBox } from "./BoxProvider";
+import { formatUsd } from "@/data/usd";
+import BundleQuickView from "./BundleQuickView";
+import { useState } from "react";
+import type { Bundle } from "@/data/catalog";
 
-export type CategoryKey = string;
+export default function BoxDrawer() {
+  const [selectedDetail, setSelectedDetail] = useState<Bundle | null>(null);
+  const { bundles } = useCatalog();
 
-export type Category = {
-  key: CategoryKey;
-  name: string;
-  kicker: string;
-  description: string;
-  image: string;
-  accent?: string;
-  subcategories?: string[];
-};
+  const {
+    lines,
+    drawerOpen,
+    setDrawerOpen,
+    totalWeight,
+    totalInr,
+    minimumReached,
+    remainingToMinimum,
+    addBundle,
+    decrementBundle,
+    removeBundle,
+    clearBox,
+    getBundle,
+    giftMode,
+    setGiftMode,
+  } = useBox();
 
-// =========================================================
-// CATALOG TYPE
-// =========================================================
+  const progress = Math.min(100, (totalWeight / 5) * 100);
 
-export type CatalogType =
-  | "product"
-  | "bundle"
-  | "combo";
+  const suggested = bundles
+    .filter((bundle) => !lines.some((line) => line.bundleId === bundle.id))
+    .sort(
+      (a, b) =>
+        Math.abs(a.weightKg - remainingToMinimum) -
+        Math.abs(b.weightKg - remainingToMinimum)
+    )
+    .slice(0, 2);
 
-// =========================================================
-// BUNDLE / CATALOG ITEM
-// =========================================================
+  return (
+    <>
+      <button
+        aria-label="Close box drawer"
+        className={drawerOpen ? "drawerBackdrop show" : "drawerBackdrop"}
+        onClick={() => setDrawerOpen(false)}
+      />
 
-export type Bundle = {
-  id: string;
+      <aside
+        className={drawerOpen ? "boxDrawer open" : "boxDrawer"}
+        aria-hidden={!drawerOpen}
+      >
+        <div className="drawerTop">
+          <div>
+            <span className="eyebrow light">YOUR SELECTION</span>
+            <h2>Your Godavari Box</h2>
+          </div>
+          <button
+            className="drawerClose"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
 
-  category: CategoryKey;
+        <div className="drawerScroll">
+          <div className="weightPanel">
+            <div className="weightRow">
+              <strong>{totalWeight.toFixed(1)} kg</strong>
+              <span>5 kg minimum</span>
+            </div>
+            <div className="progressTrack animatedProgress">
+              <i style={{ width: `${progress}%` }} />
+            </div>
+            <div className="weightMeta">
+              <span>
+                {minimumReached
+                  ? "✓ Minimum reached"
+                  : `${remainingToMinimum.toFixed(1)} kg more to minimum`}
+              </span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+          </div>
 
-  categoryName?: string;
+          <div className="giftSwitch">
+            <div>
+              <b>Sending as a gift?</b>
+              <small>We'll note this for your final order.</small>
+            </div>
+            <button
+              aria-label="Toggle gift mode"
+              className={giftMode ? "switch on" : "switch"}
+              onClick={() => setGiftMode(!giftMode)}
+            >
+              <i />
+            </button>
+          </div>
 
-  parentCategory?: string;
+          {lines.length > 0 && (
+            <div className="drawerListHead">
+              <b>
+                Your bundles (
+                {lines.reduce((sum, line) => sum + line.quantity, 0)})
+              </b>
+              <button onClick={clearBox}>Clear all</button>
+            </div>
+          )}
 
-  subcategory?: string;
+          <div className="drawerLines">
+            {lines.length === 0 ? (
+              <div className="emptyBox">
+                <span>◇</span>
+                <h3>Your box is waiting.</h3>
+                <p>
+                  Choose curated bundles and build a shipment of at least 5 kg.
+                </p>
+                <Link href="/build" onClick={() => setDrawerOpen(false)}>
+                  Start building →
+                </Link>
+              </div>
+            ) : (
+              lines.map((line) => {
+                const bundle = getBundle(line.bundleId);
+                if (!bundle) return null;
 
-  name: string;
+                return (
+                  <div className="drawerLine" key={line.bundleId}>
+                    <button
+                      className="drawerDetailImage"
+                      type="button"
+                      onClick={() => setSelectedDetail(bundle)}
+                      aria-label={`View ${bundle.name} details`}
+                    >
+                      <img src={bundle.image} alt="" />
+                    </button>
 
-  subtitle: string;
+                    <div className="lineCopy">
+                      <button
+                        type="button"
+                        className="drawerDetailTitle"
+                        onClick={() => setSelectedDetail(bundle)}
+                      >
+                        {bundle.name}
+                      </button>
 
-  weightKg: number;
+                      <small>
+                        {bundle.items.slice(0, 3).join(" · ")}
+                        {bundle.items.length > 3 ? " + more" : ""}
+                      </small>
 
-  /*
-   * Examples:
-   * "250g"
-   * "500g"
-   * "1kg"
-   * "5 kg"
-   * "10 pieces"
-   */
-  sizeLabel?: string;
+                      <small>
+                        {bundle.sizeLabel || `${bundle.weightKg} kg`} each
+                        {" "}· {formatUsd(bundle.priceInr)}
+                      </small>
 
-  priceInr: number;
+                      <div className="qty">
+                        <button
+                          onClick={() => decrementBundle(bundle.id)}
+                          aria-label={`Decrease ${bundle.name}`}
+                        >
+                          −
+                        </button>
+                        <span>{line.quantity}</span>
+                        <button
+                          onClick={() => addBundle(bundle.id)}
+                          aria-label={`Increase ${bundle.name}`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
 
-  /*
-   * Optional exact USD price from Google Sheet.
-   * Safe to keep even if some catalog rows do not use it.
-   */
-  priceUsd?: number;
+                    <button
+                      className="remove"
+                      onClick={() => removeBundle(bundle.id)}
+                      aria-label={`Remove ${bundle.name}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
 
-  // Available pack prices from the catalog Sheet, in INR.
-  variants?: {
-    size: string;
-    weightKg: number;
-    priceInr: number;
-    id: string;
-  }[];
+          {!minimumReached && lines.length > 0 && (
+            <div className="topUp">
+              <div className="topUpHead">
+                <p>
+                  <b>Almost there.</b> Add around{" "}
+                  {remainingToMinimum.toFixed(1)} kg to reach the 5 kg minimum.
+                </p>
+                <span>Suggested</span>
+              </div>
+              <div className="miniSuggestions">
+                {suggested.map((bundle) => (
+                  <button
+                    key={bundle.id}
+                    onClick={() => addBundle(bundle.id)}
+                  >
+                    <img src={bundle.image} alt="" />
+                    <span>
+                      <b>{bundle.name}</b>
+                      <small>+ {bundle.weightKg} kg</small>
+                    </span>
+                    <em>＋</em>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
-  image: string;
+        <div className="drawerBottom">
+          <div className="totalLine">
+            <span>
+              Product subtotal
+            </span>
+            <strong
+              className={undefined}
+            >
+              {formatUsd(totalInr)}
+            </strong>
+          </div>
 
-  items: string[];
+          {lines.length > 0 && (
+            <div className="totalLine">
+              <span>Transport</span>
+              <strong>Confirmed on WhatsApp</strong>
+            </div>
+          )}
 
-  tags?: string[];
+          <div className="drawerActions">
+            <Link
+              className="drawerSecondary"
+              href="/build"
+              onClick={() => setDrawerOpen(false)}
+            >
+              Continue shopping
+            </Link>
 
-  popular?: boolean;
+            {minimumReached ? (
+              <Link
+                className="goldButton drawerCheckout"
+                href="/checkout"
+                onClick={() => setDrawerOpen(false)}
+              >
+                Checkout <span>→</span>
+              </Link>
+            ) : (
+              <button
+                className="goldButton drawerCheckout disabled"
+                disabled
+              >
+                Checkout <span>→</span>
+              </button>
+            )}
+          </div>
 
-  active?: boolean;
+          {!minimumReached && lines.length > 0 && (
+            <small>
+              Add {remainingToMinimum.toFixed(1)} kg more to unlock checkout.
+            </small>
+          )}
+        </div>
+      </aside>
 
-  stock?: number;
-
-  catalogType?: CatalogType;
-};
-
-// =========================================================
-// BOX SIZES
-// =========================================================
-
-export const boxSizes = [
-  {
-    kg: 5,
-    name: "Personal",
-    description: "A compact box of favourites",
-  },
-
-  {
-    kg: 10,
-    name: "Family",
-    description: "A fuller mix for home",
-    popular: true,
-  },
-
-  {
-    kg: 15,
-    name: "Stock Up",
-    description: "More of what you miss",
-  },
-
-  {
-    kg: 20,
-    name: "Big Box",
-    description: "Made for sharing",
-  },
-];
-
-// =========================================================
-// COUNTRY / CURRENCY
-// =========================================================
-
-export const countries = [
-  {
-    code: "US",
-    name: "USA",
-    currency: "USD",
-    symbol: "$",
-    rate: 0.01042,
-  },
-
-  {
-    code: "GB",
-    name: "UK",
-    currency: "GBP",
-    symbol: "£",
-    rate: 0.0092,
-  },
-
-  {
-    code: "CA",
-    name: "Canada",
-    currency: "CAD",
-    symbol: "C$",
-    rate: 0.016,
-  },
-
-  {
-    code: "AU",
-    name: "Australia",
-    currency: "AUD",
-    symbol: "A$",
-    rate: 0.018,
-  },
-
-  {
-    code: "AE",
-    name: "UAE",
-    currency: "AED",
-    symbol: "AED ",
-    rate: 0.044,
-  },
-
-  {
-    code: "IN",
-    name: "India",
-    currency: "INR",
-    symbol: "₹",
-    rate: 1,
-  },
-];
+      {selectedDetail && (
+        <BundleQuickView
+          bundle={selectedDetail}
+          onClose={() => setSelectedDetail(null)}
+        />
+      )}
+    </>
+  );
+}
