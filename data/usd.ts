@@ -1,7 +1,3 @@
-import { countries } from "./catalog";
-
-const usdRate = countries.find((country) => country.code === "US")!.rate;
-
 const usdFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -9,6 +5,6 @@ const usdFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
-export function formatUsd(inr: number): string {
-  return usdFormatter.format(inr * usdRate);
+export function formatUsd(usd: number): string {
+  return usdFormatter.format(usd);
 }
