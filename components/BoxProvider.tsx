@@ -1,95 +1,96 @@
 "use client";
 
-import {
-  Bundle,
-  countries,
-  PACKAGING_WEIGHT_KG,
-} from "@/data/catalog";
+import { Bundle } from "@/data/catalog";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import Price from "./Price";
+import { useBox } from "./BoxProvider";
 
-import { useCatalog } from "@/components/CatalogProvider";
+function getItemParts(item: string) {
+  const match = item.match(
+    /^(.*?)\s*\((\d+(?:\.\d+)?\s*(?:kg|g|gm|pieces?|pcs))\)\s*$/i
+  );
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+  return {
+    name: match ? match[1].trim() : item,
+    weight: match ? match[2].replace(/\s+/g, "") : "",
+  };
+}
 
-type CartLine = {
-  bundleId: string;
-  quantity: number;
-};
+export default function BundleQuickView({
+  bundle,
+  onClose,
+}: {
+  bundle: Bundle;
+  onClose: () => void;
+}) {
+  const { addBundle, decrementBundle, getQuantity } = useBox();
+  const [mounted, setMounted] = useState(false);
 
-type BoxContextValue = {
-  lines: CartLine[];
+  const quantity = getQuantity(bundle.id);
+  const isIndividualProduct = bundle.catalogType === "product";
 
-  selectedBoxKg: number;
+  useEffect(() => {
+    setMounted(true);
 
-  boxWeightChosen: boolean;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-  chooseBoxWeight: (kg: number) => void;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
 
-  countryCode: string;
+    window.addEventListener("keydown", handleKeyDown);
 
-  giftMode: boolean;
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
-  drawerOpen: boolean;
+  if (!mounted) return null;
 
-  toastMessage: string;
+  return createPortal(
+    <div
+      className="quickViewLayer"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${bundle.name} details`}
+      style={{ zIndex: 10000 }}
+    >
+      <button
+        type="button"
+        className="quickViewBackdrop"
+        onClick={onClose}
+        aria-label="Close product details"
+      />
 
-  totalProductWeight: number;
+      <section className="quickViewPanel">
+        <div className="quickViewImageWrap">
+          <img src={bundle.image} alt={bundle.name} />
 
-  packagingWeight: number;
+          {bundle.popular && (
+            <span className="pill">Most loved</span>
+          )}
 
-  totalWeight: number;
+          <button
+            type="button"
+            className="quickViewClose"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
 
-  totalInr: number;
+        <div className="quickViewBody">
+          <span className="eyebrow">
+            {bundle.items.length} ITEMS ·{" "}
+            {bundle.weightKg.toFixed(1)} KG BUNDLE
+          </span>
 
+          <h2>{bundle.name}</h2>
 
-  itemCount: number;
-
-  minimumReached: boolean;
-
-  remainingToMinimum: number;
-
-  selectedCountry: (typeof countries)[number];
-
-  setSelectedBoxKg: (kg: number) => void;
-
-  setCountryCode: (code: string) => void;
-
-  setGiftMode: (value: boolean) => void;
-
-  setDrawerOpen: (value: boolean) => void;
-
-  addBundle: (bundleId: string) => void;
-
-  removeBundle: (bundleId: string) => void;
-
-  decrementBundle: (bundleId: string) => void;
-
-  clearBox: () => void;
-
-  replaceBox: (bundleIds: string[]) => void;
-
-  getBundle: (id: string) => Bundle | undefined;
-
-  getQuantity: (id: string) => number;
-};
-
-const BoxContext =
-  createContext<BoxContextValue | null>(null);
-
-const STORAGE_KEY =
-  "gb-abroad-builder-v1";
-
-const noop = () => {};
-
-const SSR_BOX_FALLBACK: BoxContextValue = {
-  lines: [],
-
-  selectedBoxKg: 5,
-
-  boxWeightChosen: false,
+          <p className="quickViewSubtitle">
+            {bundle.subtitle}
+          </p>
