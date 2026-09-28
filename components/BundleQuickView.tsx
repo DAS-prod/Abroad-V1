@@ -82,7 +82,7 @@ export default function BundleQuickView({
             <strong
               style={
                 isIndividualProduct
-                  ? { fontSize: 14, lineHeight: 1.35, fontWeight: 600 }
+                  ? { fontSize: 13, lineHeight: 1.35, fontWeight: 600 }
                   : undefined
               }
             >
@@ -135,7 +135,7 @@ export default function BundleQuickView({
             <strong
               style={
                 isIndividualProduct
-                  ? { fontSize: 13, lineHeight: 1.35, fontWeight: 600 }
+                  ? { fontSize: 12, lineHeight: 1.35, fontWeight: 600 }
                   : undefined
               }
             >
@@ -148,10 +148,7 @@ export default function BundleQuickView({
           </div>
 
           {quantity > 0 ? (
-            <div
-              className="cardQty large"
-              aria-label={`${bundle.name} quantity`}
-            >
+            <div className="cardQty large" aria-label={`${bundle.name} quantity`}>
               <button
                 type="button"
                 onClick={() => decrementBundle(bundle.id)}
@@ -159,9 +156,7 @@ export default function BundleQuickView({
               >
                 −
               </button>
-
               <span>{quantity}</span>
-
               <button
                 type="button"
                 onClick={() => addBundle(bundle.id)}
