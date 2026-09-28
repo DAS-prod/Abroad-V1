@@ -32,7 +32,7 @@ export default function BundleQuickView({
   const quantity = getQuantity(bundle.id);
   const isIndividualProduct = bundle.catalogType === "product";
   const selectedVariant = bundle.variants?.find(v => v.size === selectedSize);
-  const selectedPrice = selectedVariant?.priceInr || bundle.priceInr;
+  const selectedPrice = selectedVariant?.priceUsd || bundle.priceUsd;
   const selectedWeight = selectedVariant?.size || bundle.sizeLabel || `${bundle.weightKg} kg`;
   const selectedId = selectedVariant?.id || bundle.id;
 
@@ -109,7 +109,7 @@ export default function BundleQuickView({
                     onClick={() => setSelectedSize(variant.size)}>{variant.size}</button>
                 ))}
               </div>
-              <div className="catalogQuickPrice"><Price inr={selectedPrice} /> <span>/ {selectedWeight}</span></div>
+              <div className="catalogQuickPrice"><Price usd={selectedPrice} /> <span>/ {selectedWeight}</span></div>
               <h3>Quantity</h3>
               <div className="catalogQuickQuantity" role="group" aria-label="Quantity">
                 <button type="button" onClick={() => setRequestedQuantity(q => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
@@ -131,7 +131,7 @@ export default function BundleQuickView({
                   : undefined
               }
             >
-              <Price inr={selectedPrice} />
+              <Price usd={selectedPrice} />
             </strong>
 
             <span>
@@ -215,7 +215,7 @@ export default function BundleQuickView({
                   : undefined
               }
             >
-              <Price inr={bundle.priceInr} />
+              <Price usd={bundle.priceUsd} />
             </strong>
           </div>}
 
