@@ -52,6 +52,7 @@ export default function BundleCard({
 
   const quantity = getQuantity(bundle.id);
   const isIndividualProduct = bundle.catalogType === "product";
+  const defaultPack = bundle.variants?.find(v => v.size === "250g") || bundle.variants?.[0];
 
   const pairing = useMemo(() => {
     return (
@@ -76,6 +77,7 @@ export default function BundleCard({
   };
 
   const addSelectedBundle = () => {
+    if (isIndividualProduct) { setQuickView(true); return; }
     if (syncTargetToBundleWeight) {
       setSelectedBoxKg(bundle.weightKg);
     }
@@ -217,11 +219,7 @@ export default function BundleCard({
                   : undefined
               }
             >
-              {isIndividualProduct ? (
-                "Price on WhatsApp"
-              ) : (
-                <Price inr={bundle.priceInr} />
-              )}
+              <Price inr={defaultPack?.priceInr || bundle.priceInr} digits={isIndividualProduct ? 2 : 0} />
             </strong>
 
             {quantity > 0 ? (
