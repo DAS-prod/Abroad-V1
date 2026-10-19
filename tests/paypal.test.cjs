@@ -1,0 +1,16 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const ts=require('typescript'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('lib/paypal-abroad.ts','utf8').replace('import "server-only";','').replace('import {notifyAbroadOrder} from "./abroad-notifications";','const notifyAbroadOrder=async()=>true;');
+const output=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText;
+const mod={exports:{}};let replies=[],calls=[],writes=[];
+const fetchMock=async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>url.endsWith('/token')?{access_token:'test'}:replies.shift()};};
+vm.runInNewContext(output,{module:mod,exports:mod.exports,Buffer,process:{env:{PAYPAL_CLIENT_ID:'test',PAYPAL_CLIENT_SECRET:'test'}},fetch:fetchMock});
+const {confirmedCapture,settlePayPalOrder}=mod.exports;
+const order={id:'GBA-TEST',paypal_order_id:'PP1',total_usd:100,payment_status:'PENDING'};
+const valid=()=>({id:'PP1',status:'COMPLETED',purchase_units:[{custom_id:'GBA-TEST',payments:{captures:[{id:'CAP1',status:'COMPLETED',amount:{value:'100.00',currency_code:'USD'}}]}}]});
+const db={from:()=>({update:value=>{writes.push(value);return {eq(){return this;},then(resolve){resolve({error:null});}};}})};
+test('accepts only matching completed USD capture',()=>{assert.equal(confirmedCapture(valid(),order).id,'CAP1');for(const mutate of [p=>p.id='OTHER',p=>p.status='APPROVED',p=>p.purchase_units[0].custom_id='OTHER',p=>p.purchase_units[0].payments.captures[0].status='PENDING',p=>p.purchase_units[0].payments.captures[0].amount.currency_code='INR',p=>p.purchase_units[0].payments.captures[0].amount.value='99.99',p=>p.purchase_units.push(p.purchase_units[0])]){const p=valid();mutate(p);assert.equal(confirmedCapture(p,order),null);}});
+test('captures approval with idempotency key and stores capture',async()=>{calls=[];writes=[];replies=[{status:'APPROVED'},valid(),valid()];assert.equal((await settlePayPalOrder(db,order,true)).paid,true);assert.equal(writes[0].paypal_capture_id,'CAP1');assert.equal(calls.find(c=>c.url.endsWith('/capture')).options.headers['PayPal-Request-Id'],'capture-GBA-TEST');});
+test('pending order is not captured or marked paid',async()=>{calls=[];writes=[];replies=[{status:'CREATED'}];assert.equal((await settlePayPalOrder(db,order,true)).paid,false);assert.equal(writes.length,0);assert.equal(calls.some(c=>c.url.endsWith('/capture')),false);});
+test('mismatched amount is not marked paid',async()=>{writes=[];const bad=valid();bad.purchase_units[0].payments.captures[0].amount.value='1.00';replies=[bad,bad];assert.equal((await settlePayPalOrder(db,order,true)).paid,false);assert.equal(writes.length,0);});

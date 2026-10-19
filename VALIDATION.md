@@ -1,0 +1,1 @@
+Abroad storefront TypeScript and production build checked. Eight mocked tests cover PayPal verification and failure-isolated queued notification calls. No live PayPal/Supabase/FCM transaction was performed.
