@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const {requireLogin,loading:userLoading}=useAbroadAuth();
   useEffect(()=>{if(!userLoading)void requireLogin('/checkout')},[userLoading,requireLogin]);
-  const transportUsd = Math.round(totalWeight * 8 * 100) / 100;
+  const transportUsd = Math.round(totalWeight * 6 * 100) / 100;
   const [couponInput,setCouponInput]=useState("");
   const [appliedCoupon,setAppliedCoupon]=useState("");
   const [couponDiscount,setCouponDiscount]=useState(0);
