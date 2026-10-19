@@ -33,7 +33,7 @@ export async function validateCart(lines: Array<{bundleId:string;quantity:number
  });
  const shipmentWeight=Math.round((weight+0.5)*100)/100;
  if (options?.enforceMinimum !== false && shipmentWeight < 5) throw new Error("Minimum shipment weight is 5 kg");
- const shipping=Math.round(shipmentWeight*8*100)/100;
+ const shipping=Math.round(shipmentWeight*6*100)/100;
  subtotal=Math.round(subtotal*100)/100;
  const coupon=await evaluateCoupon(couponCode,subtotal);
  const discount=coupon?.discount_usd || 0;
